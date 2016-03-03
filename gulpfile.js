@@ -66,13 +66,13 @@ gulp.task('create-tag', function (cb) {
 
 gulp.task('build-browser-tests', function () {
     return browserify({ entries: glob.sync('test/specs/**/*.js') }).bundle()
-        .pipe(source('barchart-marketdata-api-tests-' + getVersionForComponent() + '.js'))
+        .pipe(source('barchart-marketdata-utilities-tests-' + getVersionForComponent() + '.js'))
         .pipe(buffer())
         .pipe(gulp.dest('test/dist'));
 });
 
 gulp.task('execute-browser-tests', function () {
-    return gulp.src('test/dist/barchart-marketdata-api-tests-' + getVersionForComponent() + '.js')
+    return gulp.src('test/dist/barchart-marketdata-utilities-tests-' + getVersionForComponent() + '.js')
         .pipe(jasmine());
 });
 

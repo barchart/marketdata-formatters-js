@@ -1,2 +1,1 @@
-# marketdata-formatters-js
-Utilities for formatting Barchart prices and times
+#Barchart Market Data Formatter Utilities

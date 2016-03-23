@@ -27,7 +27,7 @@ module.exports = function() {
 
 				switch (unitcode) {
 					case '2':
-						return (value / 100).toFixed(4);
+						return value.toFixed(3);
 					case '3':
 						return value.toFixed(4);
 					case '4':
@@ -230,16 +230,16 @@ describe('When a price formatter is created', function() {
             priceFormatter = new PriceFormatter('.');
         });
 
-        it('formats 377 (with unit code 2) as "3.7700"', function() {
-            expect(priceFormatter.format(377, '2')).toEqual('3.7700');
+        it('formats 377 (with unit code 2) as "377.000"', function() {
+            expect(priceFormatter.format(377, '2')).toEqual('377.000');
         });
 
-        it('formats 377.5 (with unit code 2) as "3.7750"', function() {
-            expect(priceFormatter.format(377.5, '2')).toEqual('3.7750');
+        it('formats 377.5 (with unit code 2) as "377.500"', function() {
+            expect(priceFormatter.format(377.5, '2')).toEqual('377.500');
         });
 
-        it('formats 377.75 (with unit code 2) as "3.7775"', function() {
-            expect(priceFormatter.format(377.75, '2')).toEqual('3.7775');
+        it('formats 377.75 (with unit code 2) as "377.750"', function() {
+            expect(priceFormatter.format(377.75, '2')).toEqual('377.750');
         });
 
         it('formats undefined (with unit code 2) as zero-length string', function() {

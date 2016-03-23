@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var isNaN = require('lodash.isnan');
+var lodashIsNaN = require('lodash.isnan');
 
 module.exports = function() {
 	'use strict';
@@ -22,12 +22,12 @@ module.exports = function() {
 
 		if (fractionSeparator == '.') { // Decimals
 			format = function(value, unitcode) {
-				if (value === '' || value === undefined || value === null || isNaN(value))
+				if (value === '' || value === undefined || value === null || lodashIsNaN(value))
 					return '';
 
 				switch (unitcode) {
 					case '2':
-						return value.toFixed(3);
+						return (value / 100).toFixed(4);
 					case '3':
 						return value.toFixed(4);
 					case '4':
@@ -59,7 +59,7 @@ module.exports = function() {
 		}
 		else {
 			format = function(value, unitcode) {
-				if (value === '' || value === undefined || value === null || isNaN(value))
+				if (value === '' || value === undefined || value === null || lodashIsNaN(value))
 					return '';
 
 				var sign = (value >= 0) ? '' : '-';
@@ -224,6 +224,36 @@ var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
     var priceFormatter;
+
+    describe('with a decimal fraction separator', function() {
+        beforeEach(function() {
+            priceFormatter = new PriceFormatter('.');
+        });
+
+        it('formats 377 (with unit code 2) as "3.7700"', function() {
+            expect(priceFormatter.format(377, '2')).toEqual('3.7700');
+        });
+
+        it('formats 377.5 (with unit code 2) as "3.7750"', function() {
+            expect(priceFormatter.format(377.5, '2')).toEqual('3.7750');
+        });
+
+        it('formats 377.75 (with unit code 2) as "3.7775"', function() {
+            expect(priceFormatter.format(377.75, '2')).toEqual('3.7775');
+        });
+
+        it('formats undefined (with unit code 2) as zero-length string', function() {
+            expect(priceFormatter.format(undefined, '2')).toEqual('');
+        });
+
+        it('formats null (with unit code 2) as zero-length string', function() {
+            expect(priceFormatter.format(null, '2')).toEqual('');
+        });
+
+        it('formats Number.NaN (with unit code 2) as zero-length string', function() {
+            expect(priceFormatter.format(Number.NaN, '2')).toEqual('');
+        });
+    });
 
     describe('with a dash fraction separator and no special fractions', function() {
         beforeEach(function() {

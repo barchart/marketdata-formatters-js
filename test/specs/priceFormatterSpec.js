@@ -163,6 +163,18 @@ describe('When a price formatter is created', function() {
         it('formats Number.NaN (with unit code 2) as zero-length string', function() {
             expect(priceFormatter.format(Number.NaN, '2')).toEqual('');
         });
+
+        it('formats 123 (with unit code A) as "123.00"', function() {
+            expect(priceFormatter.format(123, 'A')).toEqual('123.00');
+        });
+
+        it('formats 123.5 (with unit code A) as "123.50"', function() {
+            expect(priceFormatter.format(123.5, 'A')).toEqual('123.50');
+        });
+
+        it('formats 123.555 (with unit code A) as "123.56"', function() {
+            expect(priceFormatter.format(123.555, 'A')).toEqual('123.56');
+        });
     });
 
     describe('with a tick fraction separator and no special fractions', function() {

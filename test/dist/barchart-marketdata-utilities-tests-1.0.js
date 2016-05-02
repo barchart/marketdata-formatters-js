@@ -118,19 +118,19 @@ module.exports = function() {
 					case '7':
 						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 256), 3)].join('');
 					case '8':
-						return sign + value.toFixed(0);
+						return sign + formatDecimal(value, 0);
 					case '9':
-						return sign + value.toFixed(1);
+						return sign + formatDecimal(value, 1);
 					case 'A':
-						return sign + value.toFixed(2);
+						return sign + formatDecimal(value, 2);
 					case 'B':
-						return sign + value.toFixed(3);
+						return sign + formatDecimal(value, 3);
 					case 'C':
-						return sign + value.toFixed(4);
+						return sign + formatDecimal(value, 4);
 					case 'D':
-						return sign + value.toFixed(5);
+						return sign + formatDecimal(value, 5);
 					case 'E':
-						return sign + value.toFixed(6);
+						return sign + formatDecimal(value, 6);
 					default:
 						return sign + value;
 				}
@@ -419,6 +419,18 @@ describe('When a price formatter is created', function() {
 
         it('formats Number.NaN (with unit code 2) as zero-length string', function() {
             expect(priceFormatter.format(Number.NaN, '2')).toEqual('');
+        });
+
+        it('formats 123 (with unit code A) as "123.00"', function() {
+            expect(priceFormatter.format(123, 'A')).toEqual('123.00');
+        });
+
+        it('formats 123.5 (with unit code A) as "123.50"', function() {
+            expect(priceFormatter.format(123.5, 'A')).toEqual('123.50');
+        });
+
+        it('formats 123.555 (with unit code A) as "123.56"', function() {
+            expect(priceFormatter.format(123.555, 'A')).toEqual('123.56');
         });
     });
 

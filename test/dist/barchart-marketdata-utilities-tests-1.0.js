@@ -142,7 +142,67 @@ module.exports = function() {
 		};
 	};
 }();
-},{"lodash.isnan":2}],2:[function(require,module,exports){
+},{"lodash.isnan":3}],2:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	return function(useTwelveHourClock) {
+		var formatTime;
+
+		if (useTwelveHourClock) {
+			formatTime = formatTwelveHourTime;
+		} else {
+			formatTime = formatTwentyFourHourTime;
+		}
+
+		return {
+			format: function(q) {
+				var returnRef;
+
+				if (q.time) {
+					var t = q.time;
+
+					if (q.lastPrice && !q.flag) {
+						returnRef = formatTime(t);
+					} else {
+						returnRef = [leftPad(t.getMonth() + 1), leftPad(t.getDate()), leftPad(t.getFullYear())].join('/');
+					}
+				} else {
+					returnRef = '';
+				}
+
+				return returnRef;
+			}
+		};
+	};
+
+	function formatTwelveHourTime(t) {
+		var hours = t.getHours();
+		var period;
+
+		if (hours === 0) {
+			hours = 12;
+			period = 'AM';
+		} else if (hours > 12) {
+			hours = hours - 12;
+			period = 'PM';
+		} else {
+			hours = hours;
+			period = 'AM';
+		}
+
+		return [leftPad(hours), leftPad(t.getMinutes()), leftPad(t.getSeconds())].join(':');
+	}
+
+	function formatTwentyFourHourTime(t) {
+		return [leftPad(t.getHours()), leftPad(t.getMinutes()), leftPad(t.getSeconds())].join(':');
+	}
+
+	function leftPad(value) {
+		return ['00', value].join('').substr(-2);
+	}
+}();
+},{}],3:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -254,7 +314,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -510,4 +570,293 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":1}]},{},[3]);
+},{"../../lib/priceFormatter":1}],5:[function(require,module,exports){
+var timeFormatter = require('../../lib/timeFormatter');
+
+describe('When a time formatter is created (without specifying the clock)', function() {
+	var tf;
+
+	beforeEach(function() {
+		tf = timeFormatter();
+	});
+
+	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "00:00:00"', function() {
+				expect(tf.format(quote)).toEqual('00:00:00');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "12:00:00"', function() {
+				expect(tf.format(quote)).toEqual('12:00:00');
+			});
+		});
+
+		describe('and the quote time is 7:08:09 AM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 7, 8, 9);
+			});
+
+			it('the formatter outputs "07:08:09"', function() {
+				expect(tf.format(quote)).toEqual('07:08:09');
+			});
+		});
+
+		describe('and the quote time is 1:08:09 PM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 13, 8, 9);
+			});
+
+			it('the formatter outputs "13:08:09"', function() {
+				expect(tf.format(quote)).toEqual('13:08:09');
+			});
+		});
+	});
+
+	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456,
+				flag: 'p'
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+	});
+});
+
+describe('When a time formatter is created (and a 24-hour clock is specified)', function() {
+	var tf;
+
+	beforeEach(function() {
+		tf = timeFormatter(false);
+	});
+
+	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "00:00:00"', function() {
+				expect(tf.format(quote)).toEqual('00:00:00');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "12:00:00"', function() {
+				expect(tf.format(quote)).toEqual('12:00:00');
+			});
+		});
+
+		describe('and the quote time is 7:08:09 AM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 7, 8, 9);
+			});
+
+			it('the formatter outputs "07:08:09"', function() {
+				expect(tf.format(quote)).toEqual('07:08:09');
+			});
+		});
+
+		describe('and the quote time is 1:08:09 PM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 13, 8, 9);
+			});
+
+			it('the formatter outputs "13:08:09"', function() {
+				expect(tf.format(quote)).toEqual('13:08:09');
+			});
+		});
+	});
+
+	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456,
+				flag: 'p'
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+	});
+});
+
+describe('When a time formatter is created (and a 12-hour clock is specified)', function() {
+	var tf;
+
+	beforeEach(function() {
+		tf = timeFormatter(true);
+	});
+
+	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "12:00:00"', function() {
+				expect(tf.format(quote)).toEqual('12:00:00');
+			});
+		});
+
+		describe('and the quote time is five after midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 5, 0);
+			});
+
+			it('the formatter outputs "12:05:00"', function() {
+				expect(tf.format(quote)).toEqual('12:05:00');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "12:00:00"', function() {
+				expect(tf.format(quote)).toEqual('12:00:00');
+			});
+		});
+
+		describe('and the quote time is ten after noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 10, 0);
+			});
+
+			it('the formatter outputs "12:10:00"', function() {
+				expect(tf.format(quote)).toEqual('12:10:00');
+			});
+		});
+
+		describe('and the quote time is 7:08:09 AM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 7, 8, 9);
+			});
+
+			it('the formatter outputs "07:08:09"', function() {
+				expect(tf.format(quote)).toEqual('07:08:09');
+			});
+		});
+
+		describe('and the quote time is 1:08:09 PM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 13, 8, 9);
+			});
+
+			it('the formatter outputs "01:08:09"', function() {
+				expect(tf.format(quote)).toEqual('01:08:09');
+			});
+		});
+	});
+
+	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456,
+				flag: 'p'
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+	});
+});
+},{"../../lib/timeFormatter":2}]},{},[4,5]);

@@ -142,7 +142,25 @@ module.exports = function() {
 		};
 	};
 }();
-},{"lodash.isnan":3}],2:[function(require,module,exports){
+},{"lodash.isnan":4}],2:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	return {
+		format: function(symbol) {
+			var returnRef;
+
+			if (symbol !== null && typeof symbol === 'string') {
+				returnRef = symbol.toUpperCase();
+			} else {
+				returnRef = symbol;
+			}
+
+			return returnRef;
+ 		}
+	};
+}();
+},{}],3:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -202,7 +220,7 @@ module.exports = function() {
 		return ['00', value].join('').substr(-2);
 	}
 }();
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -314,7 +332,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -570,7 +588,117 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":1}],5:[function(require,module,exports){
+},{"../../lib/priceFormatter":1}],6:[function(require,module,exports){
+var symbolFormatter = require('../../lib/symbolFormatter');
+
+describe('When a lowercase string is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = 'aapl');
+	});
+
+	it('The result should only contain uppercase letters', function() {
+		expect(formattedSymbol).toEqual('AAPL');
+	});
+});
+
+describe('When an uppercase string is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = 'AAPL');
+	});
+
+	it('The result should only contain uppercase letters', function() {
+		expect(formattedSymbol).toEqual('AAPL');
+	});
+});
+
+describe('When a mixed case string is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = 'aApL');
+	});
+
+	it('The result should only contain uppercase letters', function() {
+		expect(formattedSymbol).toEqual('AAPL');
+	});
+});
+
+describe('When a zero-length string is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = '');
+	});
+
+	it('The result should be the original, zero-length string', function() {
+		expect(formattedSymbol).toEqual(originalSymbol);
+	});
+});
+
+describe('When a string with numbers is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = 'esm16');
+	});
+
+	it('The result should only contain uppercase letters', function() {
+		expect(formattedSymbol).toEqual('ESM16');
+	});
+});
+
+describe('When a number is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = 1);
+	});
+
+	it('The result should be a number', function() {
+		expect(typeof formattedSymbol).toEqual('number');
+	});
+
+	it('The result should the original, unformatted string', function() {
+		expect(formattedSymbol).toEqual(originalSymbol);
+	});
+});
+
+describe('When an undefined value is formatted as a symbol', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = undefined);
+	});
+
+	it('The result should be a undefined', function() {
+		expect(typeof formattedSymbol).toEqual('undefined');
+	});
+});
+
+describe('When an null value is formatted', function() {
+	var originalSymbol;
+	var formattedSymbol;
+
+	beforeEach(function() {
+		formattedSymbol = symbolFormatter.format(originalSymbol = null);
+	});
+
+	it('The result should be null', function() {
+		expect(formattedSymbol).toEqual(null);
+	});
+});
+},{"../../lib/symbolFormatter":2}],7:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -859,4 +987,4 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 		});
 	});
 });
-},{"../../lib/timeFormatter":2}]},{},[4,5]);
+},{"../../lib/timeFormatter":3}]},{},[5,6,7]);

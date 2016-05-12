@@ -1,4 +1,80 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	return {
+		unitCodeToBaseCode: function(unitCode) {
+			switch (unitCode) {
+				case '2':
+					return -1;
+				case '3':
+					return -2;
+				case '4':
+					return -3;
+				case '5':
+					return -4;
+				case '6':
+					return -5;
+				case '7':
+					return -6;
+				case '8':
+					return 0;
+				case '9':
+					return 1;
+				case 'A':
+					return 2;
+				case 'B':
+					return 3;
+				case 'C':
+					return 4;
+				case 'D':
+					return 5;
+				case 'E':
+					return 6;
+				case 'F':
+					return 7;
+				default:
+					return 0;
+			}
+		},
+
+		baseCodeToUnitCode: function(baseCode) {
+			switch (baseCode) {
+				case -1:
+					return '2';
+				case -2:
+					return '3';
+				case -3:
+					return '4';
+				case -4:
+					return '5';
+				case -5:
+					return '6';
+				case -6:
+					return '7';
+				case 0:
+					return '8';
+				case 1:
+					return '9';
+				case 2:
+					return 'A';
+				case 3:
+					return 'B';
+				case 4:
+					return 'C';
+				case 5:
+					return 'D';
+				case 6:
+					return 'E';
+				case 7:
+					return 'F';
+				default:
+					return 0;
+			}
+		}
+	};
+}();
+},{}],2:[function(require,module,exports){
 var lodashIsNaN = require('lodash.isnan');
 
 module.exports = function() {
@@ -142,7 +218,7 @@ module.exports = function() {
 		};
 	};
 }();
-},{"lodash.isnan":4}],2:[function(require,module,exports){
+},{"lodash.isnan":5}],3:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -160,7 +236,7 @@ module.exports = function() {
  		}
 	};
 }();
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -220,7 +296,7 @@ module.exports = function() {
 		return ['00', value].join('').substr(-2);
 	}
 }();
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -332,7 +408,149 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+var convert = require('../../lib/convert');
+
+describe('When converting a baseCode to a unitCode', function() {
+	it('-1 should translate to "2"', function() {
+		expect(convert.baseCodeToUnitCode(-1)).toEqual('2');
+	});
+
+	it('-2 should translate to "3"', function() {
+		expect(convert.baseCodeToUnitCode(-2)).toEqual('3');
+	});
+
+	it('-3 should translate to "4"', function() {
+		expect(convert.baseCodeToUnitCode(-3)).toEqual('4');
+	});
+
+	it('-4 should translate to "5"', function() {
+		expect(convert.baseCodeToUnitCode(-4)).toEqual('5');
+	});
+
+	it('-5 should translate to "6"', function() {
+		expect(convert.baseCodeToUnitCode(-5)).toEqual('6');
+	});
+
+	it('-6 should translate to "7"', function() {
+		expect(convert.baseCodeToUnitCode(-6)).toEqual('7');
+	});
+
+	it('0 should translate to "8"', function() {
+		expect(convert.baseCodeToUnitCode(0)).toEqual('8');
+	});
+
+	it('1 should translate to "9"', function() {
+		expect(convert.baseCodeToUnitCode(1)).toEqual('9');
+	});
+
+	it('2 should translate to "A"', function() {
+		expect(convert.baseCodeToUnitCode(2)).toEqual('A');
+	});
+
+	it('3 should translate to "B"', function() {
+		expect(convert.baseCodeToUnitCode(3)).toEqual('B');
+	});
+
+	it('4 should translate to "C"', function() {
+		expect(convert.baseCodeToUnitCode(4)).toEqual('C');
+	});
+
+	it('5 should translate to "D"', function() {
+		expect(convert.baseCodeToUnitCode(5)).toEqual('D');
+	});
+
+	it('6 should translate to "E"', function() {
+		expect(convert.baseCodeToUnitCode(6)).toEqual('E');
+	});
+
+	it('7 should translate to "F"', function() {
+		expect(convert.baseCodeToUnitCode(7)).toEqual('F');
+	});
+
+	it('"-1" should translate to 0', function() {
+		expect(convert.baseCodeToUnitCode("-1")).toEqual(0);
+	});
+
+	it('A null value should translate to 0', function() {
+		expect(convert.baseCodeToUnitCode(null)).toEqual(0);
+	});
+
+	it('An undefined value should translate to 0', function() {
+		expect(convert.baseCodeToUnitCode(undefined)).toEqual(0);
+	});
+});
+
+describe('When converting a unitCode to a baseCode', function() {
+	it('"2" should translate to -1', function() {
+		expect(convert.unitCodeToBaseCode("2")).toEqual(-1);
+	});
+
+	it('"3" should translate to -2', function() {
+		expect(convert.unitCodeToBaseCode("3")).toEqual(-2);
+	});
+
+	it('"4" should translate to -3', function() {
+		expect(convert.unitCodeToBaseCode("4")).toEqual(-3);
+	});
+
+	it('"5" should translate to -4', function() {
+		expect(convert.unitCodeToBaseCode("5")).toEqual(-4);
+	});
+
+	it('"6" should translate to -5', function() {
+		expect(convert.unitCodeToBaseCode("6")).toEqual(-5);
+	});
+
+	it('"7" should translate to -6', function() {
+		expect(convert.unitCodeToBaseCode("7")).toEqual(-6);
+	});
+
+	it('"8" should translate to 0', function() {
+		expect(convert.unitCodeToBaseCode("8")).toEqual(0);
+	});
+
+	it('"9" should translate to 1', function() {
+		expect(convert.unitCodeToBaseCode("9")).toEqual(1);
+	});
+
+	it('"A" should translate to 1', function() {
+		expect(convert.unitCodeToBaseCode("A")).toEqual(2);
+	});
+
+	it('"B" should translate to 3', function() {
+		expect(convert.unitCodeToBaseCode("B")).toEqual(3);
+	});
+
+	it('"C" should translate to 4', function() {
+		expect(convert.unitCodeToBaseCode("C")).toEqual(4);
+	});
+
+	it('"D" should translate to 5', function() {
+		expect(convert.unitCodeToBaseCode("D")).toEqual(5);
+	});
+
+	it('"E" should translate to 6', function() {
+		expect(convert.unitCodeToBaseCode("E")).toEqual(6);
+	});
+
+	it('"F" should translate to 6', function() {
+		expect(convert.unitCodeToBaseCode("F")).toEqual(7);
+	});
+
+	it('2 should translate to ', function() {
+		expect(convert.unitCodeToBaseCode(2)).toEqual(0);
+	});
+
+	it('A null value should translate to 0', function() {
+		expect(convert.unitCodeToBaseCode(null)).toEqual(0);
+	});
+
+	it('An undefined value should translate to 0', function() {
+		expect(convert.unitCodeToBaseCode(undefined)).toEqual(0);
+	});
+});
+},{"../../lib/convert":1}],7:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -588,7 +806,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":1}],6:[function(require,module,exports){
+},{"../../lib/priceFormatter":2}],8:[function(require,module,exports){
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function() {
@@ -698,7 +916,7 @@ describe('When an null value is formatted', function() {
 		expect(formattedSymbol).toEqual(null);
 	});
 });
-},{"../../lib/symbolFormatter":2}],7:[function(require,module,exports){
+},{"../../lib/symbolFormatter":3}],9:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -987,4 +1205,4 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 		});
 	});
 });
-},{"../../lib/timeFormatter":3}]},{},[5,6,7]);
+},{"../../lib/timeFormatter":4}]},{},[6,7,8,9]);

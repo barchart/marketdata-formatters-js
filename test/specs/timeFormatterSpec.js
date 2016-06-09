@@ -55,6 +55,17 @@ describe('When a time formatter is created (without specifying the clock)', func
 				expect(tf.format(quote)).toEqual('13:08:09');
 			});
 		});
+
+		describe('and the quote time is 1:08:09 PM and timezone is present', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 13, 8, 9);
+				quote.timezone = 'CST';
+			});
+
+			it('the formatter outputs "13:08:09"', function() {
+				expect(tf.format(quote)).toEqual('13:08:09 CST');
+			});
+		});
 	});
 
 	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function() {
@@ -142,6 +153,17 @@ describe('When a time formatter is created (and a 24-hour clock is specified)', 
 
 			it('the formatter outputs "13:08:09"', function() {
 				expect(tf.format(quote)).toEqual('13:08:09');
+			});
+		});
+
+		describe('and the quote time is 1:08:09 PM and a timezone is present', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 13, 8, 9);
+				quote.timezone = 'EDT';
+			});
+
+			it('the formatter outputs "13:08:09"', function() {
+				expect(tf.format(quote)).toEqual('13:08:09 EDT');
 			});
 		});
 	});

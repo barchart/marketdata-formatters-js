@@ -221,8 +221,8 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 				quote.time = new Date(2016, 4, 3, 0, 0, 0);
 			});
 
-			it('the formatter outputs "12:00:00"', function() {
-				expect(tf.format(quote)).toEqual('12:00:00');
+			it('the formatter outputs "12:00:00 AM"', function() {
+				expect(tf.format(quote)).toEqual('12:00:00 AM');
 			});
 		});
 
@@ -231,8 +231,8 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 				quote.time = new Date(2016, 4, 3, 0, 5, 0);
 			});
 
-			it('the formatter outputs "12:05:00"', function() {
-				expect(tf.format(quote)).toEqual('12:05:00');
+			it('the formatter outputs "12:05:00 AM"', function() {
+				expect(tf.format(quote)).toEqual('12:05:00 AM');
 			});
 		});
 
@@ -241,8 +241,8 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 				quote.time = new Date(2016, 4, 3, 12, 0, 0);
 			});
 
-			it('the formatter outputs "12:00:00"', function() {
-				expect(tf.format(quote)).toEqual('12:00:00');
+			it('the formatter outputs "12:00:00 PM"', function() {
+				expect(tf.format(quote)).toEqual('12:00:00 PM');
 			});
 		});
 
@@ -251,8 +251,8 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 				quote.time = new Date(2016, 4, 3, 12, 10, 0);
 			});
 
-			it('the formatter outputs "12:10:00"', function() {
-				expect(tf.format(quote)).toEqual('12:10:00');
+			it('the formatter outputs "12:10:00 PM"', function() {
+				expect(tf.format(quote)).toEqual('12:10:00 PM');
 			});
 		});
 
@@ -261,8 +261,8 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 				quote.time = new Date(2016, 4, 3, 7, 8, 9);
 			});
 
-			it('the formatter outputs "07:08:09"', function() {
-				expect(tf.format(quote)).toEqual('07:08:09');
+			it('the formatter outputs "07:08:09 AM"', function() {
+				expect(tf.format(quote)).toEqual('07:08:09 AM');
 			});
 		});
 
@@ -271,8 +271,8 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 				quote.time = new Date(2016, 4, 3, 13, 8, 9);
 			});
 
-			it('the formatter outputs "01:08:09"', function() {
-				expect(tf.format(quote)).toEqual('01:08:09');
+			it('the formatter outputs "01:08:09 PM"', function() {
+				expect(tf.format(quote)).toEqual('01:08:09 PM');
 			});
 		});
 	});

@@ -240,11 +240,15 @@ module.exports = function() {
 module.exports = function() {
 	'use strict';
 
-	return function(useTwelveHourClock) {
+	return function(useTwelveHourClock, short) {
 		var formatTime;
 
 		if (useTwelveHourClock) {
-			formatTime = formatTwelveHourTime;
+			if (short) {
+				formatTime = formatTwelveHourTimeShort;
+			} else {
+				formatTime = formatTwelveHourTime;
+			}
 		} else {
 			formatTime = formatTwentyFourHourTime;
 		}
@@ -293,6 +297,27 @@ module.exports = function() {
 		}
 
 		return leftPad(hours) + ':' + leftPad(t.getMinutes()) + ':' + leftPad(t.getSeconds()) + ' ' + period;
+	}
+
+	function formatTwelveHourTimeShort(t) {
+		var hours = t.getHours();
+		var period;
+
+		if (hours === 0) {
+			hours = 12;
+			period = 'A';
+		} else if (hours === 12) {
+			hours = hours;
+			period = 'P';
+		} else if (hours > 12) {
+			hours = hours - 12;
+			period = 'P';
+		} else {
+			hours = hours;
+			period = 'A';
+		}
+
+		return leftPad(hours) + ':' + leftPad(t.getMinutes()) + period;
 	}
 
 	function formatTwentyFourHourTime(t) {
@@ -1199,6 +1224,115 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 
 			it('the formatter outputs "01:08:09 PM"', function() {
 				expect(tf.format(quote)).toEqual('01:08:09 PM');
+			});
+		});
+	});
+
+	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456,
+				flag: 'p'
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+	});
+});
+
+describe('When a time formatter is created (and a "short" 12-hour clock is specified)', function() {
+	var tf;
+
+	beforeEach(function() {
+		tf = timeFormatter(true, true);
+	});
+
+	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "12:00A"', function() {
+				expect(tf.format(quote)).toEqual('12:00A');
+			});
+		});
+
+		describe('and the quote time is five after midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 5, 0);
+			});
+
+			it('the formatter outputs "12:05A"', function() {
+				expect(tf.format(quote)).toEqual('12:05A');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "12:00P"', function() {
+				expect(tf.format(quote)).toEqual('12:00P');
+			});
+		});
+
+		describe('and the quote time is ten after noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 10, 0);
+			});
+
+			it('the formatter outputs "12:10P"', function() {
+				expect(tf.format(quote)).toEqual('12:10P');
+			});
+		});
+
+		describe('and the quote time is 7:08:09 AM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 7, 8, 9);
+			});
+
+			it('the formatter outputs "07:08A"', function() {
+				expect(tf.format(quote)).toEqual('07:08A');
+			});
+		});
+
+		describe('and the quote time is 1:08:09 PM on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 13, 8, 9);
+			});
+
+			it('the formatter outputs "01:08P"', function() {
+				expect(tf.format(quote)).toEqual('01:08P');
 			});
 		});
 	});

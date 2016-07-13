@@ -75,10 +75,16 @@ module.exports = function() {
 	};
 }();
 },{}],2:[function(require,module,exports){
+var lodashIsNaN = require('lodash.isnan');
+
 module.exports = function() {
 	'use strict';
 
 	return function(value, digits, thousandsSeparator) {
+		if (value === '' || value === undefined || value === null || lodashIsNaN(value)) {
+			return '';
+		}
+
 		var returnRef = value.toFixed(digits);
 
 		if (thousandsSeparator && !(value < 1000)) {
@@ -113,7 +119,7 @@ module.exports = function() {
 		return returnRef;
 	};
 }();
-},{}],3:[function(require,module,exports){
+},{"lodash.isnan":6}],3:[function(require,module,exports){
 var lodashIsNaN = require('lodash.isnan');
 var decimalFormatter = require('./decimalFormatter');
 
@@ -142,9 +148,6 @@ module.exports = function() {
 
 		if (fractionSeparator == '.') { // Decimals
 			format = function(value, unitcode) {
-				if (value === '' || value === undefined || value === null || lodashIsNaN(value))
-					return '';
-
 				switch (unitcode) {
 					case '2':
 						return formatDecimal(value, 3);
@@ -173,7 +176,10 @@ module.exports = function() {
 					case 'E':
 						return formatDecimal(value, 6);
 					default:
-						return value;
+						if (value === '' || value === undefined || value === null || lodashIsNaN(value))
+							return '';
+						else
+							return value;
 				}
 			};
 		}

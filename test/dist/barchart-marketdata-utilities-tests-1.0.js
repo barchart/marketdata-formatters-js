@@ -616,6 +616,34 @@ describe('When converting a unitCode to a baseCode', function() {
 	});
 });
 },{"../../lib/convert":1}],8:[function(require,module,exports){
+var decimalFormatter = require('../../lib/decimalFormatter');
+
+describe('when using the "decimal" formatter with zero decimals and no thousands separator', function() {
+	it('formats 377 as "377"', function() {
+		expect(decimalFormatter(377, 0, ',')).toEqual('377');
+	});
+
+	it('formats 377.99 as "378"', function() {
+		expect(decimalFormatter(377.99, 0, ',')).toEqual('378');
+	});
+
+	it('formats 377.49 as "378"', function() {
+		expect(decimalFormatter(377.49, 0, ',')).toEqual('377');
+	});
+
+	it('formats 377377 as "377,377"', function() {
+		expect(decimalFormatter(377377, 0, ',')).toEqual('377,377');
+	});
+
+	it('formats 377377.49 as "377,377"', function() {
+		expect(decimalFormatter(377377.49, 0, ',')).toEqual('377,377');
+	});
+
+	it('formats 377377.99 as "377,378"', function() {
+		expect(decimalFormatter(377377.99, 0, ',')).toEqual('377,378');
+	});
+});
+},{"../../lib/decimalFormatter":2}],9:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -871,7 +899,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":3}],9:[function(require,module,exports){
+},{"../../lib/priceFormatter":3}],10:[function(require,module,exports){
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function() {
@@ -981,7 +1009,7 @@ describe('When an null value is formatted', function() {
 		expect(formattedSymbol).toEqual(null);
 	});
 });
-},{"../../lib/symbolFormatter":4}],10:[function(require,module,exports){
+},{"../../lib/symbolFormatter":4}],11:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -1501,4 +1529,4 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 		});
 	});
 });
-},{"../../lib/timeFormatter":5}]},{},[7,8,9,10]);
+},{"../../lib/timeFormatter":5}]},{},[7,8,9,10,11]);

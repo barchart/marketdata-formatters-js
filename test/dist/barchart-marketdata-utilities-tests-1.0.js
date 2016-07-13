@@ -75,7 +75,47 @@ module.exports = function() {
 	};
 }();
 },{}],2:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	return function(value, digits, thousandsSeparator) {
+		var returnRef = value.toFixed(digits);
+
+		if (thousandsSeparator && !(value < 1000)) {
+			var length = returnRef.length;
+
+			var found = digits === 0;
+			var counter = 0;
+
+			var buffer = [];
+
+			for (var i = (length - 1); !(i < 0); i--) {
+				if (counter === 3) {
+					buffer.unshift(',');
+
+					counter = 0;
+				}
+
+				var character = returnRef.charAt(i);
+
+				buffer.unshift(character);
+
+				if (found) {
+					counter = counter + 1;
+				} else if (character === '.') {
+					found = true;
+				}
+			}
+
+			returnRef = buffer.join('');
+		}
+
+		return returnRef;
+	};
+}();
+},{}],3:[function(require,module,exports){
 var lodashIsNaN = require('lodash.isnan');
+var decimalFormatter = require('./decimalFormatter');
 
 module.exports = function() {
 	'use strict';
@@ -97,38 +137,7 @@ module.exports = function() {
 		}
 
 		function formatDecimal(value, digits) {
-			var returnRef = value.toFixed(digits);
-
-			if (thousandsSeparator && !(value < 1000)) {
-				var length = returnRef.length;
-
-				var found = digits === 0;
-				var counter = 0;
-
-				var buffer = [];
-
-				for (var i = (length - 1); !(i < 0); i--) {
-					if (counter === 3) {
-						buffer.unshift(',');
-
-						counter = 0;
-					}
-
-					var character = returnRef.charAt(i);
-
-					buffer.unshift(character);
-
-					if (found) {
-						counter = counter + 1;
-					} else if (character === '.') {
-						found = true;
-					}
-				}
-
-				returnRef = buffer.join('');
-			}
-
-			return returnRef;
+			return decimalFormatter(value, digits, thousandsSeparator);
 		}
 
 		if (fractionSeparator == '.') { // Decimals
@@ -218,7 +227,7 @@ module.exports = function() {
 		};
 	};
 }();
-},{"lodash.isnan":5}],3:[function(require,module,exports){
+},{"./decimalFormatter":2,"lodash.isnan":6}],4:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -236,7 +245,7 @@ module.exports = function() {
  		}
 	};
 }();
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -352,7 +361,7 @@ module.exports = function() {
 		return ('00' + value).substr(-2);
 	}
 }();
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -464,7 +473,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var convert = require('../../lib/convert');
 
 describe('When converting a baseCode to a unitCode', function() {
@@ -606,7 +615,7 @@ describe('When converting a unitCode to a baseCode', function() {
 		expect(convert.unitCodeToBaseCode(undefined)).toEqual(0);
 	});
 });
-},{"../../lib/convert":1}],7:[function(require,module,exports){
+},{"../../lib/convert":1}],8:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -862,7 +871,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":2}],8:[function(require,module,exports){
+},{"../../lib/priceFormatter":3}],9:[function(require,module,exports){
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function() {
@@ -972,7 +981,7 @@ describe('When an null value is formatted', function() {
 		expect(formattedSymbol).toEqual(null);
 	});
 });
-},{"../../lib/symbolFormatter":3}],9:[function(require,module,exports){
+},{"../../lib/symbolFormatter":4}],10:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -1492,4 +1501,4 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 		});
 	});
 });
-},{"../../lib/timeFormatter":4}]},{},[6,7,8,9]);
+},{"../../lib/timeFormatter":5}]},{},[7,8,9,10]);

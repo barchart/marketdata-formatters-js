@@ -119,7 +119,42 @@ module.exports = function() {
 		return returnRef;
 	};
 }();
-},{"lodash.isnan":6}],3:[function(require,module,exports){
+},{"lodash.isnan":7}],3:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	var monthMap = { };
+	var numberMap = { };
+
+	var addMonth = function (code, name, number) {
+		monthMap[code] = name;
+		numberMap[code] = number;
+	};
+
+	addMonth("F", "January", 1);
+	addMonth("G", "February", 2);
+	addMonth("H", "March", 3);
+	addMonth("J", "April", 4);
+	addMonth("K", "May", 5);
+	addMonth("M", "June", 6);
+	addMonth("N", "July", 7);
+	addMonth("Q", "August", 8);
+	addMonth("U", "September", 9);
+	addMonth("V", "October", 10);
+	addMonth("X", "November", 11);
+	addMonth("Z", "December", 12);
+
+	return {
+		getCodeToNameMap: function() {
+			return monthMap;
+		},
+
+		getCodeToNumberMap: function() {
+			return numberMap;
+		}
+	};
+}();
+},{}],4:[function(require,module,exports){
 var lodashIsNaN = require('lodash.isnan');
 var decimalFormatter = require('./decimalFormatter');
 
@@ -233,7 +268,7 @@ module.exports = function() {
 		};
 	};
 }();
-},{"./decimalFormatter":2,"lodash.isnan":6}],4:[function(require,module,exports){
+},{"./decimalFormatter":2,"lodash.isnan":7}],5:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -251,7 +286,7 @@ module.exports = function() {
  		}
 	};
 }();
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -367,7 +402,7 @@ module.exports = function() {
 		return ('00' + value).substr(-2);
 	}
 }();
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -479,7 +514,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var convert = require('../../lib/convert');
 
 describe('When converting a baseCode to a unitCode', function() {
@@ -621,7 +656,7 @@ describe('When converting a unitCode to a baseCode', function() {
 		expect(convert.unitCodeToBaseCode(undefined)).toEqual(0);
 	});
 });
-},{"../../lib/convert":1}],8:[function(require,module,exports){
+},{"../../lib/convert":1}],9:[function(require,module,exports){
 var decimalFormatter = require('../../lib/decimalFormatter');
 
 describe('when using the "decimal" formatter with zero decimals and no thousands separator', function() {
@@ -649,7 +684,121 @@ describe('when using the "decimal" formatter with zero decimals and no thousands
 		expect(decimalFormatter(377377.99, 0, ',')).toEqual('377,378');
 	});
 });
-},{"../../lib/decimalFormatter":2}],9:[function(require,module,exports){
+},{"../../lib/decimalFormatter":2}],10:[function(require,module,exports){
+var monthCodes = require('../../lib/monthCodes');
+
+describe('When looking up a month name by code', function() {
+	var map;
+
+	beforeEach(function() {
+		map = monthCodes.getCodeToNameMap();
+	});
+
+	it('"F" should map to "January"', function() {
+		expect(map.F).toEqual("January");
+	});
+
+	it('"G" should map to "February"', function() {
+		expect(map.G).toEqual("February");
+	});
+
+	it('"H" should map to "March"', function() {
+		expect(map.H).toEqual("March");
+	});
+
+	it('"J" should map to "April"', function() {
+		expect(map.J).toEqual("April");
+	});
+
+	it('"K" should map to "May"', function() {
+		expect(map.K).toEqual("May");
+	});
+
+	it('"M" should map to "June"', function() {
+		expect(map.M).toEqual("June");
+	});
+
+	it('"N" should map to "July"', function() {
+		expect(map.N).toEqual("July");
+	});
+
+	it('"Q" should map to "August"', function() {
+		expect(map.Q).toEqual("August");
+	});
+
+	it('"U" should map to "September"', function() {
+		expect(map.U).toEqual("September");
+	});
+
+	it('"V" should map to "October"', function() {
+		expect(map.V).toEqual("October");
+	});
+
+	it('"X" should map to "November"', function() {
+		expect(map.X).toEqual("November");
+	});
+
+	it('"Z" should map to "December"', function() {
+		expect(map.Z).toEqual("December");
+	});
+});
+
+describe('When looking up a month number by code', function() {
+	var map;
+
+	beforeEach(function() {
+		map = monthCodes.getCodeToNumberMap();
+	});
+
+	it('"F" should map to 1', function() {
+		expect(map.F).toEqual(1);
+	});
+
+	it('"G" should map to 2', function() {
+		expect(map.G).toEqual(2);
+	});
+
+	it('"H" should map to 3', function() {
+		expect(map.H).toEqual(3);
+	});
+
+	it('"J" should map to 4', function() {
+		expect(map.J).toEqual(4);
+	});
+
+	it('"K" should map to 5', function() {
+		expect(map.K).toEqual(5);
+	});
+
+	it('"M" should map to 6', function() {
+		expect(map.M).toEqual(6);
+	});
+
+	it('"N" should map to 7', function() {
+		expect(map.N).toEqual(7);
+	});
+
+	it('"Q" should map to 8', function() {
+		expect(map.Q).toEqual(8);
+	});
+
+	it('"U" should map to 9', function() {
+		expect(map.U).toEqual(9);
+	});
+
+	it('"V" should map to 10', function() {
+		expect(map.V).toEqual(10);
+	});
+
+	it('"X" should map to 11', function() {
+		expect(map.X).toEqual(11);
+	});
+
+	it('"Z" should map to 12', function() {
+		expect(map.Z).toEqual(12);
+	});
+});
+},{"../../lib/monthCodes":3}],11:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -905,7 +1054,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":3}],10:[function(require,module,exports){
+},{"../../lib/priceFormatter":4}],12:[function(require,module,exports){
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function() {
@@ -1015,7 +1164,7 @@ describe('When an null value is formatted', function() {
 		expect(formattedSymbol).toEqual(null);
 	});
 });
-},{"../../lib/symbolFormatter":4}],11:[function(require,module,exports){
+},{"../../lib/symbolFormatter":5}],13:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -1535,4 +1684,4 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 		});
 	});
 });
-},{"../../lib/timeFormatter":5}]},{},[7,8,9,10,11]);
+},{"../../lib/timeFormatter":6}]},{},[8,9,10,11,12,13]);

@@ -119,7 +119,7 @@ module.exports = function() {
 		return returnRef;
 	};
 }();
-},{"lodash.isnan":7}],3:[function(require,module,exports){
+},{"lodash.isnan":8}],3:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -268,7 +268,74 @@ module.exports = function() {
 		};
 	};
 }();
-},{"./decimalFormatter":2,"lodash.isnan":7}],5:[function(require,module,exports){
+},{"./decimalFormatter":2,"lodash.isnan":8}],5:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	var replaceExpressions = { };
+
+	function getReplaceExpression(thousandsSeparator) {
+		if (!replaceExpressions.hasOwnProperty(thousandsSeparator)) {
+			replaceExpressions[thousandsSeparator] = new RegExp(thousandsSeparator, 'g');
+		}
+
+		return replaceExpressions[thousandsSeparator];
+	}
+
+	return function(str, unitcode, thousandsSeparator) {
+		if (str.length < 1) {
+			return undefined;
+		} else if (str === '-') {
+			return null;
+		}
+
+		if (thousandsSeparator) {
+			str = str.replace(getReplaceExpression(thousandsSeparator), '');
+		}
+
+		if (str.indexOf('.') > 0) {
+			return parseFloat(str);
+		}
+
+		var sign = (str.substr(0, 1) == '-') ? -1 : 1;
+
+		if (sign === -1) {
+			str = str.substr(1);
+		}
+
+		switch (unitcode.toString()) {
+			case '2': // 8ths
+				return sign * (((str.length > 1) ? parseInt(str.substr(0, str.length - 1)) : 0) + (parseInt(str.substr(-1)) / 8));
+			case '3': // 16ths
+				return sign * (((str.length > 2) ? parseInt(str.substr(0, str.length - 2)) : 0) + (parseInt(str.substr(-2)) / 16));
+			case '4': // 32ths
+				return sign * (((str.length > 2) ? parseInt(str.substr(0, str.length - 2)) : 0) + (parseInt(str.substr(-2)) / 32));
+			case '5': // 64ths
+				return sign * (((str.length > 2) ? parseInt(str.substr(0, str.length - 2)) : 0) + (parseInt(str.substr(-2)) / 64));
+			case '6': // 128ths
+				return sign * (((str.length > 3) ? parseInt(str.substr(0, str.length - 3)) : 0) + (parseInt(str.substr(-3)) / 128));
+			case '7': // 256ths
+				return sign * (((str.length > 3) ? parseInt(str.substr(0, str.length - 3)) : 0) + (parseInt(str.substr(-3)) / 256));
+			case '8':
+				return sign * parseInt(str);
+			case '9':
+				return sign * (parseInt(str) / 10);
+			case 'A':
+				return sign * (parseInt(str) / 100);
+			case 'B':
+				return sign * (parseInt(str) / 1000);
+			case 'C':
+				return sign * (parseInt(str) / 10000);
+			case 'D':
+				return sign * (parseInt(str) / 100000);
+			case 'E':
+				return sign * (parseInt(str) / 1000000);
+			default:
+				return sign * parseInt(str);
+		}
+	};
+}();
+},{}],6:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -286,7 +353,7 @@ module.exports = function() {
  		}
 	};
 }();
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -402,7 +469,7 @@ module.exports = function() {
 		return ('00' + value).substr(-2);
 	}
 }();
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -514,7 +581,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var convert = require('../../lib/convert');
 
 describe('When converting a baseCode to a unitCode', function() {
@@ -656,7 +723,7 @@ describe('When converting a unitCode to a baseCode', function() {
 		expect(convert.unitCodeToBaseCode(undefined)).toEqual(0);
 	});
 });
-},{"../../lib/convert":1}],9:[function(require,module,exports){
+},{"../../lib/convert":1}],10:[function(require,module,exports){
 var decimalFormatter = require('../../lib/decimalFormatter');
 
 describe('when using the "decimal" formatter with zero decimals and no thousands separator', function() {
@@ -684,7 +751,7 @@ describe('when using the "decimal" formatter with zero decimals and no thousands
 		expect(decimalFormatter(377377.99, 0, ',')).toEqual('377,378');
 	});
 });
-},{"../../lib/decimalFormatter":2}],10:[function(require,module,exports){
+},{"../../lib/decimalFormatter":2}],11:[function(require,module,exports){
 var monthCodes = require('../../lib/monthCodes');
 
 describe('When looking up a month name by code', function() {
@@ -798,7 +865,7 @@ describe('When looking up a month number by code', function() {
 		expect(map.Z).toEqual(12);
 	});
 });
-},{"../../lib/monthCodes":3}],11:[function(require,module,exports){
+},{"../../lib/monthCodes":3}],12:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -1054,7 +1121,129 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":4}],12:[function(require,module,exports){
+},{"../../lib/priceFormatter":4}],13:[function(require,module,exports){
+var priceParser = require('../../lib/priceParser');
+
+describe('when parsing prices', function() {
+	'use strict';
+
+	describe('with a decimal fraction separator', function() {
+		it('returns 377 (with unit code 2) when parsing "377.000"', function() {
+			expect(priceParser('377.000', '2')).toEqual(377);
+		});
+
+		it('returns 377.5 (with unit code 2) when parsing "377.500"', function() {
+			expect(priceParser('377.500', '2')).toEqual(377.5);
+		});
+
+		it('returns 377.75 (with unit code 2) when parsing "377.750"', function() {
+			expect(priceParser('377.750', '2')).toEqual(377.75);
+		});
+
+		it('returns 3770.75 (with unit code 2) when parsing "3770.750"', function() {
+			expect(priceParser('3770.750', '2')).toEqual(3770.75);
+		});
+
+		it('returns 37700.75 (with unit code 2) when parsing "37700.750"', function() {
+			expect(priceParser('37700.750', '2')).toEqual(37700.75);
+		});
+
+		it('returns 377000.75 (with unit code 2) when parsing "377000.750"', function() {
+			expect(priceParser('377000.750', '2')).toEqual(377000.75);
+		});
+
+		it('returns 3770000.75 (with unit code 2) when parsing "3770000.750"', function() {
+			expect(priceParser('3770000.750', '2')).toEqual(3770000.75);
+		});
+
+		it('returns 3770000 (with unit code 2) when parsing "3770000.000"', function() {
+			expect(priceParser('3770000.000', '2')).toEqual(3770000);
+		});
+
+		it('returns 0 (with unit code 2) when parsing "0.000"', function() {
+			expect(priceParser('0.000', '2')).toEqual(0);
+		});
+
+		it('returns undefined (with unit code 2) when parsing zero-length string', function() {
+			expect(priceParser('', '2')).toEqual(undefined);
+		});
+
+		it('returns 0 (with unit code 8) when parsing "0"', function() {
+			expect(priceParser('0', '8')).toEqual(0);
+		});
+
+		it('returns 1000 (with unit code 8) when parsing "1000"', function() {
+			expect(priceParser('1000', '8')).toEqual(1000);
+		});
+	});
+
+	describe('with a decimal fraction separator and a comma thousands separator', function() {
+		it('returns 3770.75 (with unit code 2) when parsing "3,770.750"', function() {
+			expect(priceParser('3,770.750', '2', ',')).toEqual(3770.75);
+		});
+
+		it('returns 37700.75 (with unit code 2) when parsing "37,700.750"', function() {
+			expect(priceParser('37,700.750', '2', ',')).toEqual(37700.75);
+		});
+
+		it('returns 377000.75 (with unit code 2) when parsing "377,000.750"', function() {
+			expect(priceParser('377,000.750', '2', ',')).toEqual(377000.75);
+		});
+
+		it('returns 3770000.75 (with unit code 2) when parsing "3,770,000.750"', function() {
+			expect(priceParser('3,770,000.750', '2', ',')).toEqual(3770000.75);
+		});
+
+		it('returns 3770000 (with unit code 2) when parsing "3,770,000.000"', function() {
+			expect(priceParser('3,770,000.000', '2', ',')).toEqual(3770000);
+		});
+	});
+
+	describe('with a dash fraction separator', function() {
+		it('returns 123 (with unit code 2) when parsing "123-0"', function() {
+			expect(priceParser('123-0', '2')).toEqual(123);
+		});
+
+		it('returns 123.5 (with unit code 2) when parsing "123-4"', function() {
+			expect(priceParser('123-4', '2')).toEqual(123.5);
+		});
+
+		it('returns 0.5 (with unit code 2) when parsing "0-4"', function() {
+			expect(priceParser('0-4', '2')).toEqual(0.5);
+		});
+
+		it('returns 0 (with unit code 2) when parsing "0-0"', function() {
+			expect(priceParser('0-0', '2')).toEqual(0);
+		});
+
+		it('returns undefined (with unit code 2) when parsing zero-length string', function() {
+			expect(priceParser('', '2')).toEqual(undefined);
+		});
+	});
+
+	describe('with a tick fraction separator', function() {
+		it('returns 123 (with unit code 2) when parsing "123\'0"', function() {
+			expect(priceParser('123\'0', '2')).toEqual(123);
+		});
+
+		it('returns 123.5 (with unit code 2) when parsing "123\'4"', function() {
+			expect(priceParser('123\'4', '2')).toEqual(123.5);
+		});
+
+		it('returns 0.5 (with unit code 2) when parsing "0\'4"', function() {
+			expect(priceParser('0\'4', '2')).toEqual(0.5);
+		});
+
+		it('returns 0 (with unit code 2) when parsing "0\'0"', function() {
+			expect(priceParser('0\'0', '2')).toEqual(0);
+		});
+
+		it('returns undefined (with unit code 2) when parsing zero-length string', function() {
+			expect(priceParser('', '2')).toEqual(undefined);
+		});
+	});
+});
+},{"../../lib/priceParser":5}],14:[function(require,module,exports){
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function() {
@@ -1164,7 +1353,7 @@ describe('When an null value is formatted', function() {
 		expect(formattedSymbol).toEqual(null);
 	});
 });
-},{"../../lib/symbolFormatter":5}],13:[function(require,module,exports){
+},{"../../lib/symbolFormatter":6}],15:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -1684,4 +1873,4 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 		});
 	});
 });
-},{"../../lib/timeFormatter":6}]},{},[8,9,10,11,12,13]);
+},{"../../lib/timeFormatter":7}]},{},[9,10,11,12,13,14,15]);

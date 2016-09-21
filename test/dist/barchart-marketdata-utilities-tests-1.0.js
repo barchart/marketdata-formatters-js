@@ -381,10 +381,10 @@ module.exports = function() {
 
 				if (!t) {
 					return '';
-				} else if (q.lastPrice && !q.flag) {
-					return formatters.formatTime(t, q.timezone);
-				} else {
+				} else if (!q.lastPrice || q.flag || q.sessionT) {
 					return formatters.formatDate(t);
+				} else {
+					return formatters.formatTime(t, q.timezone);
 				}
 			},
 
@@ -1432,6 +1432,37 @@ describe('When a time formatter is created (without specifying the clock)', func
 			quote = {
 				lastPrice: 123.456,
 				flag: 'p'
+			};
+		});
+
+		describe('and the quote time is midnight on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 0, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+
+		describe('and the quote time is noon on May 3, 2016', function() {
+			beforeEach(function() {
+				quote.time = new Date(2016, 4, 3, 12, 0, 0);
+			});
+
+			it('the formatter outputs "05/03/16"', function() {
+				expect(tf.format(quote)).toEqual('05/03/16');
+			});
+		});
+	});
+
+	describe('and a quote is formatted (with with no "flag" and a "lastPrice" value and a "sessionT" indicator)', function() {
+		var quote;
+
+		beforeEach(function() {
+			quote = {
+				lastPrice: 123.456,
+				sessionT: true
 			};
 		});
 

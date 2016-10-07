@@ -119,7 +119,7 @@ module.exports = function() {
 		return returnRef;
 	};
 }();
-},{"lodash.isnan":8}],3:[function(require,module,exports){
+},{"lodash.isnan":9}],3:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -269,7 +269,7 @@ module.exports = function() {
 		};
 	};
 }();
-},{"./decimalFormatter":2,"lodash.isnan":8}],5:[function(require,module,exports){
+},{"./decimalFormatter":2,"lodash.isnan":9}],5:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -355,6 +355,18 @@ module.exports = function() {
 	};
 }();
 },{}],7:[function(require,module,exports){
+module.exports = function() {
+	'use strict';
+
+	var percentRegex = /(\.RT)$/;
+
+	return {
+		displayUsingPercent: function(symbol) {
+			return percentRegex.test(symbol);
+		}
+	};
+}();
+},{}],8:[function(require,module,exports){
 module.exports = function() {
 	'use strict';
 
@@ -470,7 +482,7 @@ module.exports = function() {
 		return ('00' + value).substr(-2);
 	}
 }();
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -582,7 +594,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var convert = require('../../lib/convert');
 
 describe('When converting a baseCode to a unitCode', function() {
@@ -724,7 +736,7 @@ describe('When converting a unitCode to a baseCode', function() {
 		expect(convert.unitCodeToBaseCode(undefined)).toEqual(0);
 	});
 });
-},{"../../lib/convert":1}],10:[function(require,module,exports){
+},{"../../lib/convert":1}],11:[function(require,module,exports){
 var decimalFormatter = require('../../lib/decimalFormatter');
 
 describe('when using the "decimal" formatter with zero decimals and no thousands separator', function() {
@@ -752,7 +764,7 @@ describe('when using the "decimal" formatter with zero decimals and no thousands
 		expect(decimalFormatter(377377.99, 0, ',')).toEqual('377,378');
 	});
 });
-},{"../../lib/decimalFormatter":2}],11:[function(require,module,exports){
+},{"../../lib/decimalFormatter":2}],12:[function(require,module,exports){
 var monthCodes = require('../../lib/monthCodes');
 
 describe('When looking up a month name by code', function() {
@@ -866,7 +878,7 @@ describe('When looking up a month number by code', function() {
 		expect(map.Z).toEqual(12);
 	});
 });
-},{"../../lib/monthCodes":3}],12:[function(require,module,exports){
+},{"../../lib/monthCodes":3}],13:[function(require,module,exports){
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function() {
@@ -1122,7 +1134,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 });
-},{"../../lib/priceFormatter":4}],13:[function(require,module,exports){
+},{"../../lib/priceFormatter":4}],14:[function(require,module,exports){
 var priceParser = require('../../lib/priceParser');
 
 describe('when parsing prices', function() {
@@ -1244,7 +1256,7 @@ describe('when parsing prices', function() {
 		});
 	});
 });
-},{"../../lib/priceParser":5}],14:[function(require,module,exports){
+},{"../../lib/priceParser":5}],15:[function(require,module,exports){
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function() {
@@ -1354,7 +1366,21 @@ describe('When an null value is formatted', function() {
 		expect(formattedSymbol).toEqual(null);
 	});
 });
-},{"../../lib/symbolFormatter":6}],15:[function(require,module,exports){
+},{"../../lib/symbolFormatter":6}],16:[function(require,module,exports){
+var symbolParser = require('../../lib/symbolParser');
+
+describe('When checking the display format for the symbol "HPIUSA.RP"', function() {
+	it('it should not be formatted as a percent', function() {
+		expect(symbolParser.displayUsingPercent('HPIUSA.RP')).toEqual(false);
+	});
+});
+
+describe('When checking the display format for the symbol "UERMNTUS.RT"', function() {
+	it('it should be formatted as a percent', function() {
+		expect(symbolParser.displayUsingPercent('UERMNTUS.RT')).toEqual(true);
+	});
+});
+},{"../../lib/symbolParser":7}],17:[function(require,module,exports){
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function() {
@@ -1905,4 +1931,4 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 		});
 	});
 });
-},{"../../lib/timeFormatter":7}]},{},[9,10,11,12,13,14,15]);
+},{"../../lib/timeFormatter":8}]},{},[10,11,12,13,14,15,16,17]);

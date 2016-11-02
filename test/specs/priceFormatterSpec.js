@@ -3,7 +3,7 @@ var PriceFormatter = require('../../lib/priceFormatter');
 describe('When a price formatter is created', function() {
 	var priceFormatter;
 
-	describe('with a decimal fraction separator', function() {
+	describe('with a decimal separator', function() {
 		beforeEach(function() {
 			priceFormatter = new PriceFormatter('.');
 		});
@@ -65,7 +65,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 
-	describe('with a decimal fraction separator, no special fractions, and a thousands separator', function() {
+	describe('with a decimal separator, no special fractions, and a thousands separator', function() {
 		beforeEach(function() {
 			priceFormatter = new PriceFormatter('.', false, ',');
 		});
@@ -127,7 +127,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 
-	describe('with a dash fraction separator and no special fractions', function() {
+	describe('with a dash separator and no special fractions', function() {
 		beforeEach(function() {
 			priceFormatter = new PriceFormatter('-', false);
 		});
@@ -177,7 +177,21 @@ describe('When a price formatter is created', function() {
 		});
 	});
 
-	describe('with a tick fraction separator and no special fractions', function() {
+	describe('with a dash separator and special fractions', function() {
+		beforeEach(function() {
+			priceFormatter = new PriceFormatter('-', true, true);
+		});
+
+		it('formats 123.625 (with unit code 5) as "123-200"', function() {
+			expect(priceFormatter.format(123.625, '5')).toEqual('123-200');
+		});
+
+		it('formats 123.640625 (with unit code 5) as "123-205"', function() {
+			expect(priceFormatter.format(123.640625, '5')).toEqual('123-205');
+		});
+	});
+
+	describe('with a tick separator and no special fractions', function() {
 		beforeEach(function() {
 			priceFormatter = new PriceFormatter('\'', false);
 		});
@@ -215,7 +229,7 @@ describe('When a price formatter is created', function() {
 		});
 	});
 
-	describe('with no fraction separator and no special fractions', function() {
+	describe('with no separator and no special fractions', function() {
 		beforeEach(function() {
 			priceFormatter = new PriceFormatter('', false);
 		});

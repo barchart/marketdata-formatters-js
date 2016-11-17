@@ -87,8 +87,9 @@ module.exports = function() {
 
 		var returnRef = value.toFixed(digits);
 
-		if (thousandsSeparator && !(value < 1000)) {
+		if (thousandsSeparator && !(value > -1000 && value < 1000)) {
 			var length = returnRef.length;
+			var negative = value < 0;
 
 			var found = digits === 0;
 			var counter = 0;
@@ -96,7 +97,7 @@ module.exports = function() {
 			var buffer = [];
 
 			for (var i = (length - 1); !(i < 0); i--) {
-				if (counter === 3) {
+				if (counter === 3 && !(negative && i === 0)) {
 					buffer.unshift(thousandsSeparator);
 
 					counter = 0;
@@ -118,6 +119,20 @@ module.exports = function() {
 
 		return returnRef;
 	};
+
+	/*
+	 // An alternative to consider ... seems about 15% faster ... not to
+	 // mention much less lengthy ... but, has a problem with more than
+	 // three decimal places ... regular expression needs work ...
+
+	 return function(value, digits, thousandsSeparator) {
+	 	if (typeof value === 'number' && (value || value === 0)) {
+	 		return value.toFixed(digits).replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator || ',');
+	 	} else {
+	 		return '';
+		}
+	 };
+	 */
 }();
 },{"lodash.isnan":9}],3:[function(require,module,exports){
 module.exports = function() {
@@ -738,29 +753,127 @@ describe('When converting a unitCode to a baseCode', function() {
 },{"../../lib/convert":1}],11:[function(require,module,exports){
 var decimalFormatter = require('../../lib/decimalFormatter');
 
-describe('when using the "decimal" formatter with zero decimals and no thousands separator', function() {
+describe('when formatting invalid values', function() {
+	it('formats a null value as a zero-length string', function() {
+		expect(decimalFormatter(null, 0, ',')).toEqual('');
+	});
+
+	it('formats an undefined value as a zero-length string', function() {
+		expect(decimalFormatter(undefined, 0, ',')).toEqual('');
+	});
+
+	it('formats Number.NaN as a zero-length string', function() {
+		expect(decimalFormatter(Number.NaN, 0, ',')).toEqual('');
+	});
+});
+
+describe('when using the "decimal" formatter with zero decimals and thousands separator', function() {
+	it('formats 0 as "0"', function() {
+		expect(decimalFormatter(0, 0, ',')).toEqual('0');
+	});
+
+	it('formats 0.1 as "0"', function() {
+		expect(decimalFormatter(0.1, 0, ',')).toEqual('0');
+	});
+
+	it('formats 0.9 as "0"', function() {
+		expect(decimalFormatter(0.9, 0, ',')).toEqual('1');
+	});
+
 	it('formats 377 as "377"', function() {
 		expect(decimalFormatter(377, 0, ',')).toEqual('377');
+	});
+
+	it('formats -377 as "-377"', function() {
+		expect(decimalFormatter(-377, 0, ',')).toEqual('-377');
 	});
 
 	it('formats 377.99 as "378"', function() {
 		expect(decimalFormatter(377.99, 0, ',')).toEqual('378');
 	});
 
-	it('formats 377.49 as "378"', function() {
+	it('formats -377.99 as "-378"', function() {
+		expect(decimalFormatter(-377.99, 0, ',')).toEqual('-378');
+	});
+
+	it('formats 377.49 as "377"', function() {
 		expect(decimalFormatter(377.49, 0, ',')).toEqual('377');
+	});
+
+	it('formats -377.49 as "-377"', function() {
+		expect(decimalFormatter(-377.49, 0, ',')).toEqual('-377');
 	});
 
 	it('formats 377377 as "377,377"', function() {
 		expect(decimalFormatter(377377, 0, ',')).toEqual('377,377');
 	});
 
+	it('formats -377377 as "-377,377"', function() {
+		expect(decimalFormatter(-377377, 0, ',')).toEqual('-377,377');
+	});
+
 	it('formats 377377.49 as "377,377"', function() {
 		expect(decimalFormatter(377377.49, 0, ',')).toEqual('377,377');
 	});
 
+	it('formats -377377.49 as "-377,377"', function() {
+		expect(decimalFormatter(-377377.49, 0, ',')).toEqual('-377,377');
+	});
+
 	it('formats 377377.99 as "377,378"', function() {
 		expect(decimalFormatter(377377.99, 0, ',')).toEqual('377,378');
+	});
+
+	it('formats -377377.99 as "-377,378"', function() {
+		expect(decimalFormatter(-377377.99, 0, ',')).toEqual('-377,378');
+	});
+});
+
+describe('when using the "decimal" formatter with two decimals and thousands separator', function() {
+	it('formats 0 as "0.00"', function() {
+		expect(decimalFormatter(0, 2, ',')).toEqual('0.00');
+	});
+
+	it('formats 0.001 as "0.00"', function() {
+		expect(decimalFormatter(0.001, 2, ',')).toEqual('0.00');
+	});
+
+	it('formats 0.009 as "0.01"', function() {
+		expect(decimalFormatter(0.009, 2, ',')).toEqual('0.01');
+	});
+
+	it('formats 123.45 as "123.45"', function() {
+		expect(decimalFormatter(123.45, 2, ',')).toEqual('123.45');
+	});
+
+	it('formats -123.45 as "-123.45"', function() {
+		expect(decimalFormatter(-123.45, 2, ',')).toEqual('-123.45');
+	});
+
+	it('formats 1234.5 as "1234.50"', function() {
+		expect(decimalFormatter(1234.5, 2, ',')).toEqual('1,234.50');
+	});
+
+	it('formats -1234.5 as "-1234.50"', function() {
+		expect(decimalFormatter(-1234.5, 2, ',')).toEqual('-1,234.50');
+	});
+
+	it('formats 123456.789 as "123,456.79"', function() {
+		expect(decimalFormatter(123456.789, 2, ',')).toEqual('123,456.79');
+	});
+
+	it('formats -123456.789 as "-123,456.79"', function() {
+		expect(decimalFormatter(-123456.789, 2, ',')).toEqual('-123,456.79');
+	});
+});
+
+describe('when using the "decimal" formatter with four decimals and thousands separator', function() {
+	it('formats 1234.56789 as "1,234.5679"', function () {
+		expect(decimalFormatter(1234.56789, 4, ',')).toEqual('1,234.5679');
+	});
+
+	it('formats -1234.56789 as "-1,234.5679"', function () {
+		expect(decimalFormatter(-1234.56789, 4, ',')).toEqual('-1,234.5679');
 	});
 });
 },{"../../lib/decimalFormatter":2}],12:[function(require,module,exports){

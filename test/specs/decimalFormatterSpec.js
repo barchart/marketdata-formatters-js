@@ -1,5 +1,19 @@
 var decimalFormatter = require('../../lib/decimalFormatter');
 
+describe('when formatting invalid values', function() {
+	it('formats a null value as a zero-length string', function() {
+		expect(decimalFormatter(null, 0, ',')).toEqual('');
+	});
+
+	it('formats an undefined value as a zero-length string', function() {
+		expect(decimalFormatter(undefined, 0, ',')).toEqual('');
+	});
+
+	it('formats Number.NaN as a zero-length string', function() {
+		expect(decimalFormatter(Number.NaN, 0, ',')).toEqual('');
+	});
+});
+
 describe('when using the "decimal" formatter with zero decimals and thousands separator', function() {
 	it('formats 0 as "0"', function() {
 		expect(decimalFormatter(0, 0, ',')).toEqual('0');
@@ -97,5 +111,15 @@ describe('when using the "decimal" formatter with two decimals and thousands sep
 
 	it('formats -123456.789 as "-123,456.79"', function() {
 		expect(decimalFormatter(-123456.789, 2, ',')).toEqual('-123,456.79');
+	});
+});
+
+describe('when using the "decimal" formatter with four decimals and thousands separator', function() {
+	it('formats 1234.56789 as "1,234.5679"', function () {
+		expect(decimalFormatter(1234.56789, 4, ',')).toEqual('1,234.5679');
+	});
+
+	it('formats -1234.56789 as "-1,234.5679"', function () {
+		expect(decimalFormatter(-1234.56789, 4, ',')).toEqual('-1,234.5679');
 	});
 });

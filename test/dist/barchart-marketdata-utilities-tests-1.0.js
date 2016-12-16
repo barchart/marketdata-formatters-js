@@ -372,12 +372,138 @@ module.exports = function() {
 module.exports = function() {
 	'use strict';
 
-	var percentRegex = /(\.RT)$/;
-	var jerqFutureConversionRegex = new RegExp('([A-Z0-9]{1,3})([A-Z]{1})([0-9]{3}|[0-9]{1})?([0-9]{1})$');
+	var exchangeRegex = /^(.*)\\.([A-Z]{1,4})$/i;
 
-	return {
-		displayUsingPercent: function(symbol) {
-			return percentRegex.test(symbol);
+	var jerqFutureConversionRegex = /(.{1,3})([A-Z]{1})([0-9]{3}|[0-9]{1})?([0-9]{1})$/i;
+	var concreteFutureRegex = /^(.{1,3})([A-Z]{1})([0-9]{4}|[0-9]{1,2})$/i;
+	var referenceFutureRegex = /^(.{1,3})(\*{1})([0-9]{1})$/i;
+	var futureSpreadRegex = /^_S_/i;
+	var forexRegex = /^\^([A-Z]{3})([A-Z]{3})$/i;
+	var sectorRegex = /^\-(.*)$/i;
+	var indexRegex = /^\$(.*)$/i;
+	var batsRegex = /^(.*)\.BZ$/i;
+	var usePercentRegex = /(\.RT)$/;
+
+	var symbolParser = {
+		parseInstrumentType: function(symbol) {
+			if (typeof symbol !== 'string') {
+				return null;
+			}
+
+			var exchangeMatch = symbol.match(exchangeRegex);
+
+			if (exchangeMatch !== null) {
+				symbol = exchangeMatch[1];
+			}
+
+			if (futureSpreadRegex.test(symbol)) {
+				return {
+					symbol: symbol,
+					type: 'future_spread'
+				};
+			}
+
+			var staticFutureMatch = symbol.match(concreteFutureRegex);
+
+			if (staticFutureMatch !== null) {
+				var yearString = staticFutureMatch[3];
+				var year = parseInt(yearString);
+
+				if (yearString.length === 1 || yearString.length == 2) {
+					var currentDate = new Date();
+					var currentYear = currentDate.getFullYear();
+
+					var base = Math.pow(10, yearString.length);
+
+					year = year + currentYear - (currentYear % base);
+
+					if (year < currentYear) {
+						year = year + base;
+					}
+				}
+
+				return {
+					symbol: symbol,
+					type: 'future',
+					root: staticFutureMatch[1],
+					dynamic: false,
+					month: staticFutureMatch[2],
+					year: year
+				};
+			}
+
+			const dynamicFutureMatch = symbol.match(referenceFutureRegex);
+
+			if (dynamicFutureMatch !== null) {
+				return {
+					symbol: symbol,
+					type: 'future',
+					root: dynamicFutureMatch[1],
+					dynamic: true,
+					dynamicCode: dynamicFutureMatch[3]
+				};
+			}
+
+			const forexMatch = symbol.match(forexRegex);
+
+			if (forexMatch !== null) {
+				return {
+					symbol: symbol,
+					type: 'forex'
+				};
+			}
+
+			const indexMatch = symbol.match(indexRegex);
+
+			if (indexMatch !== null) {
+				return {
+					symbol: symbol,
+					type: 'index'
+				};
+			}
+
+			const sectorMatch = symbol.match(sectorRegex);
+
+			if (sectorMatch !== null) {
+				return {
+					symbol: symbol,
+					type: 'sector'
+				};
+			}
+
+			return null;
+		},
+
+		getIsConcrete: function(symbol) {
+			return !this.getIsReference(symbol);
+		},
+
+		getIsReference: function(symbol) {
+			return referenceFutureRegex.test(symbol);
+		},
+
+		getIsFuture: function(symbol) {
+			return getIsType(symbol, 'future');
+		},
+
+		getIsFutureSpread: function(symbol) {
+			return getIsType(symbol, 'future_spread');
+		},
+
+		getIsForex: function(symbol) {
+			return getIsType(symbol, 'forex');
+		},
+
+		getIsSector: function(symbol) {
+			return getIsType(symbol, 'sector');
+		},
+
+		getIsIndex: function(symbol) {
+			return getIsType(symbol, 'index');
+		},
+
+		getIsBats: function(symbol) {
+			return batsRegex.test(symbol);
 		},
 
 		getProducerSymbol: function(symbol) {
@@ -390,8 +516,20 @@ module.exports = function() {
 			}
 
 			return returnRef;
+		},
+
+		displayUsingPercent: function(symbol) {
+			return usePercentRegex.test(symbol);
 		}
 	};
+
+	var getIsType = function(symbol, type) {
+		var instrumentType = symbolParser.parseInstrumentType(symbol);
+
+		return instrumentType !== null && instrumentType.type === type;
+	};
+
+	return symbolParser;
 }();
 },{}],8:[function(require,module,exports){
 module.exports = function() {
@@ -1507,6 +1645,506 @@ describe('When an null value is formatted', function() {
 });
 },{"../../lib/symbolFormatter":6}],16:[function(require,module,exports){
 var symbolParser = require('../../lib/symbolParser');
+
+describe('When parsing a symbol for instrument type', function() {
+	describe('and the symbol is IBM', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('IBM');
+		});
+
+		it('the result should be null', function() {
+			expect(instrumentType).toBe(null);
+		});
+	});
+
+	describe('and the symbol is ESZ6', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ESZ6');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ESZ6"', function() {
+			expect(instrumentType.symbol).toEqual('ESZ6');
+		});
+
+		it('the "type" should be "future"', function() {
+			expect(instrumentType.type).toEqual('future');
+		});
+
+		it('the "dynamic" property should be false', function() {
+			expect(instrumentType.dynamic).toEqual(false);
+		});
+
+		it('the "root" should be "ES"', function() {
+			expect(instrumentType.root).toEqual('ES');
+		});
+
+		it('the "month" should be "Z"', function() {
+			expect(instrumentType.month).toEqual('Z');
+		});
+
+		it('the "year" should be 2016', function() {
+			expect(instrumentType.year).toEqual(2016);
+		});
+	});
+
+	describe('and the symbol is ESZ16', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ESZ16');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ESZ16"', function() {
+			expect(instrumentType.symbol).toEqual('ESZ16');
+		});
+
+		it('the "type" should be "future"', function() {
+			expect(instrumentType.type).toEqual('future');
+		});
+
+		it('the "dynamic" property should be false', function() {
+			expect(instrumentType.dynamic).toEqual(false);
+		});
+
+		it('the "root" should be "ES"', function() {
+			expect(instrumentType.root).toEqual('ES');
+		});
+
+		it('the "month" should be "Z"', function() {
+			expect(instrumentType.month).toEqual('Z');
+		});
+
+		it('the "year" should be 2016', function() {
+			expect(instrumentType.year).toEqual(2016);
+		});
+	});
+
+	describe('and the symbol is ESZ2016', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ESZ2016');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ES2016Z6"', function() {
+			expect(instrumentType.symbol).toEqual('ESZ2016');
+		});
+
+		it('the "type" should be "future"', function() {
+			expect(instrumentType.type).toEqual('future');
+		});
+
+		it('the "dynamic" property should be false', function() {
+			expect(instrumentType.dynamic).toEqual(false);
+		});
+
+		it('the "root" should be "ES"', function() {
+			expect(instrumentType.root).toEqual('ES');
+		});
+
+		it('the "month" should be "Z"', function() {
+			expect(instrumentType.month).toEqual('Z');
+		});
+
+		it('the "year" should be 2016', function() {
+			expect(instrumentType.year).toEqual(2016);
+		});
+	});
+
+	describe('and the symbol is ES*0', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ES*0');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ES*0"', function() {
+			expect(instrumentType.symbol).toEqual('ES*0');
+		});
+
+		it('the "type" should be "future"', function() {
+			expect(instrumentType.type).toEqual('future');
+		});
+
+		it('the "dynamic" property should be true', function() {
+			expect(instrumentType.dynamic).toEqual(true);
+		});
+
+		it('the "root" should be "ES"', function() {
+			expect(instrumentType.root).toEqual('ES');
+		});
+
+		it('the "dynamicCode" property should be "0"', function() {
+			expect(instrumentType.dynamicCode).toEqual('0');
+		});
+	});
+
+	describe('and the symbol is ES*1', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ES*1');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ES*1"', function() {
+			expect(instrumentType.symbol).toEqual('ES*1');
+		});
+
+		it('the "type" should be "future"', function() {
+			expect(instrumentType.type).toEqual('future');
+		});
+
+		it('the "dynamic" property should be true', function() {
+			expect(instrumentType.dynamic).toEqual(true);
+		});
+
+		it('the "root" should be "ES"', function() {
+			expect(instrumentType.root).toEqual('ES');
+		});
+
+		it('the "dynamicCode" property should be "1"', function() {
+			expect(instrumentType.dynamicCode).toEqual('1');
+		});
+	});
+
+	describe('and the symbol is ^EURUSD', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('^EURUSD');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "^EURUSD"', function() {
+			expect(instrumentType.symbol).toEqual('^EURUSD');
+		});
+
+		it('the "type" should be "forex"', function() {
+			expect(instrumentType.type).toEqual('forex');
+		});
+	});
+
+	describe('and the symbol is $DOWI', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('$DOWI');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "$DOWI"', function() {
+			expect(instrumentType.symbol).toEqual('$DOWI');
+		});
+
+		it('the "type" should be "index"', function() {
+			expect(instrumentType.type).toEqual('index');
+		});
+	});
+
+	describe('and the symbol is -001A', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('-001A');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "-001A"', function() {
+			expect(instrumentType.symbol).toEqual('-001A');
+		});
+
+		it('the "type" should be "index"', function() {
+			expect(instrumentType.type).toEqual('sector');
+		});
+	});
+});
+
+describe('When checking to see if a symbol is a future', function() {
+	it('the symbol "ESZ6" should return true', function() {
+		expect(symbolParser.getIsFuture('ESZ6')).toEqual(true);
+	});
+
+	it('the symbol "ESZ16" should return true', function() {
+		expect(symbolParser.getIsFuture('ESZ16')).toEqual(true);
+	});
+
+	it('the symbol "ESZ2016" should return true', function() {
+		expect(symbolParser.getIsFuture('ESZ2016')).toEqual(true);
+	});
+
+	it('the symbol "ESZ016" should return false', function() {
+		expect(symbolParser.getIsFuture('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return true', function() {
+		expect(symbolParser.getIsFuture('O!H7')).toEqual(true);
+	});
+
+	it('the symbol "O!H17" should return true', function() {
+		expect(symbolParser.getIsFuture('O!H17')).toEqual(true);
+	});
+
+	it('the symbol "O!H2017" should return true', function() {
+		expect(symbolParser.getIsFuture('O!H2017')).toEqual(true);
+	});
+
+	it('the symbol "IBM" should return false', function() {
+		expect(symbolParser.getIsFuture('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return false', function() {
+		expect(symbolParser.getIsFuture('^EURUSD')).toEqual(false);
+	});
+
+	it('the symbol "-001A" should return false', function() {
+		expect(symbolParser.getIsFuture('-001A')).toEqual(false);
+	});
+
+	it('the symbol "$DOWI" should return false', function() {
+		expect(symbolParser.getIsFuture('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
+		expect(symbolParser.getIsFuture('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+});
+
+describe('When checking to see if a symbol is a "concrete" future', function() {
+	it('the symbol "ESZ6" should return true', function() {
+		expect(symbolParser.getIsConcrete('ESZ6')).toEqual(true);
+	});
+
+	it('the symbol "ESZ16" should return true', function() {
+		expect(symbolParser.getIsConcrete('ESZ16')).toEqual(true);
+	});
+
+	it('the symbol "ESZ2016" should return true', function() {
+		expect(symbolParser.getIsConcrete('ESZ2016')).toEqual(true);
+	});
+
+	it('the symbol "ES*0" should return false', function() {
+		expect(symbolParser.getIsConcrete('ES*0')).toEqual(false);
+	});
+
+	it('the symbol "ES*1" should return false', function() {
+		expect(symbolParser.getIsConcrete('ES*1')).toEqual(false);
+	});
+});
+
+describe('When checking to see if a symbol is a "reference" future', function() {
+	it('the symbol "ESZ6" should return false', function() {
+		expect(symbolParser.getIsReference('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function() {
+		expect(symbolParser.getIsReference('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function() {
+		expect(symbolParser.getIsReference('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ES*0" should return true', function() {
+		expect(symbolParser.getIsReference('ES*0')).toEqual(true);
+	});
+
+	it('the symbol "ES*1" should return true', function() {
+		expect(symbolParser.getIsReference('ES*1')).toEqual(true);
+	});
+});
+
+describe('When checking to see if a symbol is sector', function() {
+	it('the symbol "ESZ6" should return false', function() {
+		expect(symbolParser.getIsSector('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function() {
+		expect(symbolParser.getIsSector('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function() {
+		expect(symbolParser.getIsSector('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ESZ016" should return false', function() {
+		expect(symbolParser.getIsSector('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return false', function() {
+		expect(symbolParser.getIsSector('O!H7')).toEqual(false);
+	});
+
+	it('the symbol "O!H17" should return false', function() {
+		expect(symbolParser.getIsSector('O!H17')).toEqual(false);
+	});
+
+	it('the symbol "O!H2017" should return false', function() {
+		expect(symbolParser.getIsSector('O!H2017')).toEqual(false);
+	});
+
+	it('the symbol "IBM" should return false', function() {
+		expect(symbolParser.getIsSector('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return false', function() {
+		expect(symbolParser.getIsSector('^EURUSD')).toEqual(false);
+	});
+
+	it('the symbol "-001A" should return true', function() {
+		expect(symbolParser.getIsSector('-001A')).toEqual(true);
+	});
+
+	it('the symbol "$DOWI" should return false', function() {
+		expect(symbolParser.getIsSector('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
+		expect(symbolParser.getIsSector('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+});
+
+describe('When checking to see if a symbol is forex', function() {
+	it('the symbol "ESZ6" should return false', function() {
+		expect(symbolParser.getIsForex('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function() {
+		expect(symbolParser.getIsForex('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function() {
+		expect(symbolParser.getIsForex('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ESZ016" should return false', function() {
+		expect(symbolParser.getIsForex('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return false', function() {
+		expect(symbolParser.getIsForex('O!H7')).toEqual(false);
+	});
+
+	it('the symbol "O!H17" should return false', function() {
+		expect(symbolParser.getIsForex('O!H17')).toEqual(false);
+	});
+
+	it('the symbol "O!H2017" should return false', function() {
+		expect(symbolParser.getIsForex('O!H2017')).toEqual(false);
+	});
+
+	it('the symbol "IBM" should return false', function() {
+		expect(symbolParser.getIsForex('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return true', function() {
+		expect(symbolParser.getIsForex('^EURUSD')).toEqual(true);
+	});
+
+	it('the symbol "-001A" should return false', function() {
+		expect(symbolParser.getIsForex('-001A')).toEqual(false);
+	});
+
+	it('the symbol "$DOWI" should return false', function() {
+		expect(symbolParser.getIsForex('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
+		expect(symbolParser.getIsForex('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+});
+
+describe('When checking to see if a symbol is a future spread', function() {
+	it('the symbol "ESZ6" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ESZ016" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('O!H7')).toEqual(false);
+	});
+
+	it('the symbol "O!H17" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('O!H17')).toEqual(false);
+	});
+
+	it('the symbol "O!H2017" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('O!H2017')).toEqual(false);
+	});
+
+	it('the symbol "IBM" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('^EURUSD')).toEqual(false);
+	});
+
+	it('the symbol "-001A" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('-001A')).toEqual(false);
+	});
+
+	it('the symbol "$DOWI" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return true', function() {
+		expect(symbolParser.getIsFutureSpread('_S_SP_ZCH7_ZCK7')).toEqual(true);
+	});
+});
+
+describe('When checking to see if a symbol is a BATS listing', function() {
+	it('the symbol "IBM" should return false', function() {
+		expect(symbolParser.getIsBats('IBM')).toEqual(false);
+	});
+
+	it('the symbol "IBM.BZ" should return true', function() {
+		expect(symbolParser.getIsBats('IBM.BZ')).toEqual(true);
+	});
+});
 
 describe('When checking the display format for the symbol "HPIUSA.RP"', function() {
 	it('it should not be formatted as a percent', function() {

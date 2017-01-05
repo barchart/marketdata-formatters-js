@@ -4,6 +4,10 @@ describe('when parsing prices', function() {
 	'use strict';
 
 	describe('with a decimal fraction separator', function() {
+		it('returns 0.75 (with unit code 2) when parsing ".75"', function() {
+			expect(priceParser('.75', '2')).toEqual(0.75);
+		});
+
 		it('returns 377 (with unit code 2) when parsing "377.000"', function() {
 			expect(priceParser('377.000', '2')).toEqual(377);
 		});
@@ -54,6 +58,10 @@ describe('when parsing prices', function() {
 	});
 
 	describe('with a decimal fraction separator and a comma thousands separator', function() {
+		it('returns 0.75 (with unit code 2) when parsing ".75"', function() {
+			expect(priceParser('.75', '2', ',')).toEqual(0.75);
+		});
+
 		it('returns 3770.75 (with unit code 2) when parsing "3,770.750"', function() {
 			expect(priceParser('3,770.750', '2', ',')).toEqual(3770.75);
 		});

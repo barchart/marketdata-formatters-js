@@ -331,7 +331,7 @@ module.exports = function() {
 			str = str.replace(getReplaceExpression(thousandsSeparator), '');
 		}
 
-		if (str.indexOf('.') > 0) {
+		if (!(str.indexOf('.') < 0)) {
 			return parseFloat(str);
 		}
 
@@ -429,19 +429,23 @@ module.exports = function() {
 			var staticFutureMatch = symbol.match(concreteFutureRegex);
 
 			if (staticFutureMatch !== null) {
+				var currentDate = new Date();
+				var currentYear = currentDate.getFullYear();
+
 				var yearString = staticFutureMatch[3];
 				var year = parseInt(yearString);
 
-				if (yearString.length === 1 || yearString.length == 2) {
-					var currentDate = new Date();
-					var currentYear = currentDate.getFullYear();
-
-					var base = Math.pow(10, yearString.length);
-
-					year = year + currentYear - (currentYear % base);
+				if (year < 10) {
+					year = Math.floor(currentYear / 10) * 10 + year;
+				} else if (year < 100) {
+					year = Math.floor(currentYear / 100) * 100 + year;
 
 					if (year < currentYear) {
-						year = year + base;
+						var alternateYear = year + 100;
+
+						if (currentYear - year > alternateYear - currentYear) {
+							year = alternateYear;
+						}
 					}
 				}
 
@@ -1777,6 +1781,10 @@ describe('when parsing prices', function() {
 	'use strict';
 
 	describe('with a decimal fraction separator', function() {
+		it('returns 0.75 (with unit code 2) when parsing ".75"', function() {
+			expect(priceParser('.75', '2')).toEqual(0.75);
+		});
+
 		it('returns 377 (with unit code 2) when parsing "377.000"', function() {
 			expect(priceParser('377.000', '2')).toEqual(377);
 		});
@@ -1827,6 +1835,10 @@ describe('when parsing prices', function() {
 	});
 
 	describe('with a decimal fraction separator and a comma thousands separator', function() {
+		it('returns 0.75 (with unit code 2) when parsing ".75"', function() {
+			expect(priceParser('.75', '2', ',')).toEqual(0.75);
+		});
+
 		it('returns 3770.75 (with unit code 2) when parsing "3,770.750"', function() {
 			expect(priceParser('3,770.750', '2', ',')).toEqual(3770.75);
 		});

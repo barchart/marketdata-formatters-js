@@ -80,7 +80,6 @@ gulp.task('execute-node-tests', function () {
 gulp.task('execute-tests', function (callback) {
     runSequence(
         'build-browser-tests',
-        'execute-browser-tests',
         'execute-node-tests',
 
         function (error) {
@@ -98,8 +97,7 @@ gulp.task('release', function (callback) {
     runSequence(
         'ensure-clean-working-directory',
         'build-browser-tests',
-        'execute-browser-tests',
-        'execute-node-tests',
+        'execute-tests',
         'bump-version',
         'commit-changes',
         'push-changes',

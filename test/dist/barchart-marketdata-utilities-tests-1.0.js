@@ -165,9 +165,15 @@ var lodashIsNaN = require('lodash.isnan');
 module.exports = function() {
 	'use strict';
 
-	return function(value, digits, thousandsSeparator) {
+	return function(value, digits, thousandsSeparator, useParenthesis) {
 		if (value === '' || value === undefined || value === null || lodashIsNaN(value)) {
 			return '';
+		}
+
+		var applyParenthesis = value < 0 && useParenthesis === true;
+
+		if (applyParenthesis) {
+			value = 0 - value;
 		}
 
 		var returnRef = value.toFixed(digits);
@@ -199,25 +205,18 @@ module.exports = function() {
 				}
 			}
 
+			if (applyParenthesis) {
+				buffer.unshift('(')
+				buffer.push(')');
+			}
+
 			returnRef = buffer.join('');
+		} else if (applyParenthesis) {
+			returnRef = '(' + returnRef + ')';
 		}
 
 		return returnRef;
 	};
-
-	/*
-	 // An alternative to consider ... seems about 15% faster ... not to
-	 // mention much less lengthy ... but, has a problem with more than
-	 // three decimal places ... regular expression needs work ...
-
-	 return function(value, digits, thousandsSeparator) {
-	 	if (typeof value === 'number' && (value || value === 0)) {
-	 		return value.toFixed(digits).replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator || ',');
-	 	} else {
-	 		return '';
-		}
-	 };
-	 */
 }();
 },{"lodash.isnan":14}],5:[function(require,module,exports){
 var XmlDomParser = require('./common/xml/XmlDomParser');
@@ -738,23 +737,24 @@ module.exports = function() {
 		return ['000', Math.floor(value)].join('').substr(-1 * digits);
 	}
 
-	return function(fractionSeparator, specialFractions, thousandsSeparator) {
+	return function(fractionSeparator, specialFractions, thousandsSeparator, useParenthesis) {
 		var format;
 
 		function getWholeNumberAsString(value) {
 			var val = Math.floor(value);
 
-			if ((val === 0) && (fractionSeparator === ''))
+			if ((val === 0) && (fractionSeparator === '')) {
 				return '';
-			else
+			} else {
 				return val;
+			}
 		}
 
 		function formatDecimal(value, digits) {
-			return decimalFormatter(value, digits, thousandsSeparator);
+			return decimalFormatter(value, digits, thousandsSeparator, useParenthesis);
 		}
 
-		if (fractionSeparator == '.') { // Decimals
+		if (fractionSeparator === '.') {
 			format = function(value, unitcode) {
 				switch (unitcode) {
 					case '2':
@@ -784,53 +784,68 @@ module.exports = function() {
 					case 'E':
 						return formatDecimal(value, 6);
 					default:
-						if (value === '' || value === undefined || value === null || lodashIsNaN(value))
+						if (value === '' || value === undefined || value === null || lodashIsNaN(value)) {
 							return '';
-						else
+						} else {
 							return value;
+						}
 				}
 			};
 		} else {
 			format = function(value, unitcode) {
-				if (value === '' || value === undefined || value === null || lodashIsNaN(value))
+				if (value === '' || value === undefined || value === null || lodashIsNaN(value)) {
 					return '';
+				}
 
-				var sign = (value >= 0) ? '' : '-';
-				value = Math.abs(value);
+				var originalValue = value;
+				var negative = value < 0;
+				var value = Math.abs(value);
 
-				// Well, damn it, sometimes code that is beautiful just doesn't work quite right.
-				// return [sign, Math.floor(value), fractionSeparator, frontPad((value - Math.floor(value)) * 8, 1)].join('');
-				// will fail when Math.floor(value) is 0 and the fractionSeparator is '', since 0.500 => 04 instead of just 4
+				var prefix;
+				var suffix;
+
+				if (negative) {
+					if (useParenthesis === true) {
+						prefix = '(';
+						suffix = ')';
+					} else {
+						prefix = '-';
+						suffix = '';
+					}
+				} else {
+					prefix = '';
+					suffix = '';
+				}
 
 				switch (unitcode) {
 					case '2':
-						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * 8, 1)].join('');
+						return [prefix, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * 8, 1), suffix].join('');
 					case '3':
-						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * 16, 2)].join('');
+						return [prefix, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * 16, 2), suffix].join('');
 					case '4':
-						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * 32, 2)].join('');
+						return [prefix, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * 32, 2), suffix].join('');
 					case '5':
-						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 64), (specialFractions ? 3 : 2))].join('');
+						return [prefix, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 64), (specialFractions ? 3 : 2)), suffix].join('');
 					case '6':
-						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 128), 3)].join('');
+						return [prefix, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 128), 3), suffix].join('');
 					case '7':
-						return [sign, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 256), 3)].join('');
+						return [prefix, getWholeNumberAsString(value), fractionSeparator, frontPad((value - Math.floor(value)) * (specialFractions ? 320 : 256), 3), suffix].join('');
 					case '8':
-						return sign + formatDecimal(value, 0);
+						return formatDecimal(originalValue, 0);
 					case '9':
-						return sign + formatDecimal(value, 1);
+						return formatDecimal(originalValue, 1);
 					case 'A':
-						return sign + formatDecimal(value, 2);
+						return formatDecimal(originalValue, 2);
 					case 'B':
-						return sign + formatDecimal(value, 3);
+						return formatDecimal(originalValue, 3);
 					case 'C':
-						return sign + formatDecimal(value, 4);
+						return formatDecimal(originalValue, 4);
 					case 'D':
-						return sign + formatDecimal(value, 5);
+						return formatDecimal(originalValue, 5);
 					case 'E':
-						return sign + formatDecimal(value, 6);
+						return formatDecimal(originalValue, 6);
 					default:
-						return sign + value;
+						return originalValue;
 				}
 			};
 		}
@@ -2021,6 +2036,58 @@ describe('when using the "decimal" formatter with four decimals and thousands se
 		expect(decimalFormatter(-1234.56789, 4, ',')).toEqual('-1,234.5679');
 	});
 });
+
+describe('when using the "decimal" formatter to format negative numbers with a thousands separator', function() {
+	it('formats -123.456789 as "-123.45"', function () {
+		expect(decimalFormatter(-123.456789, 2, ',')).toEqual('-123.46');
+	});
+
+	it('formats -123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(-123456.789 , 2, ',')).toEqual('-123,456.79');
+	});
+});
+
+describe('when using the "decimal" formatter to format with parenthesis and a thousands separator', function() {
+	it('formats 123.456789 as "-23.45"', function () {
+		expect(decimalFormatter(123.456789, 2, ',', true)).toEqual('123.46');
+	});
+
+	it('formats -123.456789 as "-123.45"', function () {
+		expect(decimalFormatter(-123.456789, 2, ',', true)).toEqual('(123.46)');
+	});
+
+	it('formats 123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(123456.789 , 2, ',', true)).toEqual('123,456.79');
+	});
+
+	it('formats -123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(-123456.789 , 2, ',', true)).toEqual('(123,456.79)');
+	});
+
+	it('formats -3770.75, to three decimal places, as "(3,770.750)', function () {
+		expect(decimalFormatter(-3770.75 , 3, ',', true)).toEqual('(3,770.750)');
+	});
+});
+
+describe('when using the "decimal" formatter to format with parenthesis and no thousands separator', function() {
+	it('formats 123.456789 as "-23.45"', function () {
+		expect(decimalFormatter(123.456789, 2, '', true)).toEqual('123.46');
+	});
+
+	it('formats -123.456789 as "-123.45"', function () {
+		expect(decimalFormatter(-123.456789, 2, '', true)).toEqual('(123.46)');
+	});
+
+	it('formats 123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(123456.789 , 2, '', true)).toEqual('123456.79');
+	});
+
+	it('formats -123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(-123456.789 , 2, '', true)).toEqual('(123456.79)');
+	});
+});
+
+
 },{"../../lib/decimalFormatter":4}],17:[function(require,module,exports){
 var monthCodes = require('../../lib/monthCodes');
 
@@ -2349,6 +2416,10 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(377, '2')).toEqual('377.000');
 		});
 
+		it('formats -377 (with unit code 2) as "-377.000"', function() {
+			expect(priceFormatter.format(-377, '2')).toEqual('-377.000');
+		});
+
 		it('formats 377.5 (with unit code 2) as "377.500"', function() {
 			expect(priceFormatter.format(377.5, '2')).toEqual('377.500');
 		});
@@ -2411,6 +2482,10 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(377, '2')).toEqual('377.000');
 		});
 
+		it('formats -377 (with unit code 2) as "-377.000"', function() {
+			expect(priceFormatter.format(-377, '2')).toEqual('-377.000');
+		});
+
 		it('formats 377.5 (with unit code 2) as "377.500"', function() {
 			expect(priceFormatter.format(377.5, '2')).toEqual('377.500');
 		});
@@ -2429,6 +2504,10 @@ describe('When a price formatter is created', function() {
 
 		it('formats 377000.75 (with unit code 2) as "377,000.750"', function() {
 			expect(priceFormatter.format(377000.75, '2')).toEqual('377,000.750');
+		});
+
+		it('formats -377000.75 (with unit code 2) as "-377,000.750"', function() {
+			expect(priceFormatter.format(-377000.75, '2')).toEqual('-377,000.750');
 		});
 
 		it('formats 3770000.75 (with unit code 2) as "3,770,000.750"', function() {
@@ -2473,8 +2552,16 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(123, '2')).toEqual('123-0');
 		});
 
+		it('formats -123 (with unit code 2) as "-123-0"', function() {
+			expect(priceFormatter.format(-123, '2')).toEqual('-123-0');
+		});
+
 		it('formats 123.5 (with unit code 2) as "123-4"', function() {
 			expect(priceFormatter.format(123.5, '2')).toEqual('123-4');
+		});
+
+		it('formats -123.5 (with unit code 2) as "-123-4"', function() {
+			expect(priceFormatter.format(-123.5, '2')).toEqual('-123-4');
 		});
 
 		it('formats 0.5 (with unit code 2) as "0-4"', function() {
@@ -2516,15 +2603,27 @@ describe('When a price formatter is created', function() {
 
 	describe('with a dash separator and special fractions', function() {
 		beforeEach(function() {
-			priceFormatter = new PriceFormatter('-', true, true);
+			priceFormatter = new PriceFormatter('-', true);
 		});
 
 		it('formats 123.625 (with unit code 5) as "123-200"', function() {
 			expect(priceFormatter.format(123.625, '5')).toEqual('123-200');
 		});
 
+		it('formats -123.625 (with unit code 5) as "-123-200"', function() {
+			expect(priceFormatter.format(-123.625, '5')).toEqual('-123-200');
+		});
+
 		it('formats 123.640625 (with unit code 5) as "123-205"', function() {
 			expect(priceFormatter.format(123.640625, '5')).toEqual('123-205');
+		});
+
+		it('formats -123.640625 (with unit code 5) as "-123-205"', function() {
+			expect(priceFormatter.format(-123.640625, '5')).toEqual('-123-205');
+		});
+
+		it('formats 0 (with unit code 2) as "0"', function () {
+			expect(priceFormatter.format(0, '2')).toEqual('0-0');
 		});
 	});
 
@@ -2541,8 +2640,16 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(123.5, '2')).toEqual('123\'4');
 		});
 
+		it('formats -123.5 (with unit code 2) as "-123\'4"', function() {
+			expect(priceFormatter.format(-123.5, '2')).toEqual('-123\'4');
+		});
+
 		it('formats 0.5 (with unit code 2) as "0\'4"', function() {
 			expect(priceFormatter.format(0.5, '2')).toEqual('0\'4');
+		});
+
+		it('formats -0.5 (with unit code 2) as "-0\'4"', function() {
+			expect(priceFormatter.format(-0.5, '2')).toEqual('-0\'4');
 		});
 
 		it('formats 0 (with unit code 2) as "0\'0"', function() {
@@ -2601,6 +2708,144 @@ describe('When a price formatter is created', function() {
 
 		it('formats Number.NaN (with unit code 2) as zero-length string', function() {
 			expect(priceFormatter.format(Number.NaN, '2')).toEqual('');
+		});
+	});
+
+	describe('with parenthetical negatives', function() {
+		describe('and a decimal separator, no special fractions, and no thousands separator', function() {
+			beforeEach(function() {
+				priceFormatter = new PriceFormatter('.', false, '', true);
+			});
+
+			it('formats 3770.75 (with unit code 2) as "3770.750"', function() {
+				expect(priceFormatter.format(3770.75, '2')).toEqual('3770.750');
+			});
+
+			it('formats -3770.75 (with unit code 2) as "(3770.750)"', function() {
+				expect(priceFormatter.format(-3770.75, '2')).toEqual('(3770.750)');
+			});
+
+			it('formats 0 (with unit code 2) as "0.000"', function() {
+				expect(priceFormatter.format(0, '2')).toEqual('0.000');
+			});
+		});
+
+		describe('with a decimal separator, no special fractions, and a thousands separator', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('.', false, ',', true);
+			});
+
+			it('formats 3770.75 (with unit code 2) as "3,770.750"', function() {
+				expect(priceFormatter.format(3770.75, '2')).toEqual('3,770.750');
+			});
+
+			it('formats -3770.75 (with unit code 2) as "(3,770.750)"', function() {
+				expect(priceFormatter.format(-3770.75, '2')).toEqual('(3,770.750)');
+			});
+
+			it('formats 0 (with unit code 2) as "0.000"', function() {
+				expect(priceFormatter.format(0, '2')).toEqual('0.000');
+			});
+		});
+
+		describe('with a dash separator and no special fractions', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('-', false, '', true);
+			});
+
+			it('formats 123 (with unit code 2) as "123-0"', function () {
+				expect(priceFormatter.format(123, '2')).toEqual('123-0');
+			});
+
+			it('formats -123 (with unit code 2) as "(123-0)"', function () {
+				expect(priceFormatter.format(-123, '2')).toEqual('(123-0)');
+			});
+
+			it('formats 123.5 (with unit code 2) as "123-4"', function () {
+				expect(priceFormatter.format(123.5, '2')).toEqual('123-4');
+			});
+
+			it('formats -123.5 (with unit code 2) as "(123-4)"', function () {
+				expect(priceFormatter.format(-123.5, '2')).toEqual('(123-4)');
+			});
+
+			it('formats 0.5 (with unit code 2) as "0-4"', function() {
+				expect(priceFormatter.format(0.5, '2')).toEqual('0-4');
+			});
+
+			it('formats -0.5 (with unit code 2) as "(0-4)"', function() {
+				expect(priceFormatter.format(-0.5, '2')).toEqual('(0-4)');
+			});
+
+			it('formats 0 (with unit code 2) as "0"', function () {
+				expect(priceFormatter.format(0, '2')).toEqual('0-0');
+			});
+		});
+
+		describe('with a dash separator and special fractions', function() {
+			beforeEach(function() {
+				priceFormatter = new PriceFormatter('-', true, '', true);
+			});
+
+			it('formats 123.625 (with unit code 5) as "123-200"', function() {
+				expect(priceFormatter.format(123.625, '5')).toEqual('123-200');
+			});
+
+			it('formats -123.625 (with unit code 5) as "(123-200)"', function() {
+				expect(priceFormatter.format(-123.625, '5')).toEqual('(123-200)');
+			});
+
+			it('formats 123.640625 (with unit code 5) as "123-205"', function() {
+				expect(priceFormatter.format(123.640625, '5')).toEqual('123-205');
+			});
+
+			it('formats -123.640625 (with unit code 5) as "(123-205)"', function() {
+				expect(priceFormatter.format(-123.640625, '5')).toEqual('(123-205)');
+			});
+		});
+
+		describe('with a tick separator and no special fractions', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('\'', false, '', true);
+			});
+
+			it('formats 123.5 (with unit code 2) as "123\'4"', function () {
+				expect(priceFormatter.format(123.5, '2')).toEqual('123\'4');
+			});
+
+			it('formats -123.5 (with unit code 2) as "(123\'4)"', function () {
+				expect(priceFormatter.format(-123.5, '2')).toEqual('(123\'4)');
+			});
+
+			it('formats 0.5 (with unit code 2) as "0\'4"', function() {
+				expect(priceFormatter.format(0.5, '2')).toEqual('0\'4');
+			});
+
+			it('formats -0.5 (with unit code 2) as "(0\'4)"', function() {
+				expect(priceFormatter.format(-0.5, '2')).toEqual('(0\'4)');
+			});
+
+			it('formats 0 (with unit code 2) as "0\'0"', function() {
+				expect(priceFormatter.format(0, '2')).toEqual('0\'0');
+			});
+		});
+
+		describe('with no separator and no special fractions', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('', false, '', true);
+			});
+
+			it('formats 0.5 (with unit code 2) as "4"', function () {
+				expect(priceFormatter.format(0.5, '2')).toEqual('4');
+			});
+
+			it('formats -0.5 (with unit code 2) as "(4)"', function () {
+				expect(priceFormatter.format(-0.5, '2')).toEqual('(4)');
+			});
+
+			it('formats 0 (with unit code 2) as "0"', function () {
+				expect(priceFormatter.format(0, '2')).toEqual('0');
+			});
 		});
 	});
 });

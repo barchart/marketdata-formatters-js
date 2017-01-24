@@ -123,3 +123,50 @@ describe('when using the "decimal" formatter with four decimals and thousands se
 		expect(decimalFormatter(-1234.56789, 4, ',')).toEqual('-1,234.5679');
 	});
 });
+
+describe('when using the "decimal" formatter to format negative numbers with a thousands separator', function() {
+	it('formats -123.456789 as "-123.45"', function () {
+		expect(decimalFormatter(-123.456789, 2, ',')).toEqual('-123.46');
+	});
+
+	it('formats -123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(-123456.789 , 2, ',')).toEqual('-123,456.79');
+	});
+});
+
+describe('when using the "decimal" formatter to format with parenthesis and a thousands separator', function() {
+	it('formats 123.456789 as "-23.45"', function () {
+		expect(decimalFormatter(123.456789, 2, ',', true)).toEqual('123.46');
+	});
+
+	it('formats -123.456789 as "-123.45"', function () {
+		expect(decimalFormatter(-123.456789, 2, ',', true)).toEqual('(123.46)');
+	});
+
+	it('formats 123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(123456.789 , 2, ',', true)).toEqual('123,456.79');
+	});
+
+	it('formats -123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(-123456.789 , 2, ',', true)).toEqual('(123,456.79)');
+	});
+});
+
+describe('when using the "decimal" formatter to format with parenthesis and no thousands separator', function() {
+	it('formats 123.456789 as "-23.45"', function () {
+		expect(decimalFormatter(123.456789, 2, '', true)).toEqual('123.46');
+	});
+
+	it('formats -123.456789 as "-123.45"', function () {
+		expect(decimalFormatter(-123.456789, 2, '', true)).toEqual('(123.46)');
+	});
+
+	it('formats 123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(123456.789 , 2, '', true)).toEqual('123456.79');
+	});
+
+	it('formats -123456.789 as "-123,456.79', function () {
+		expect(decimalFormatter(-123456.789 , 2, '', true)).toEqual('(123456.79)');
+	});
+});
+

@@ -150,6 +150,10 @@ describe('when using the "decimal" formatter to format with parenthesis and a th
 	it('formats -123456.789 as "-123,456.79', function () {
 		expect(decimalFormatter(-123456.789 , 2, ',', true)).toEqual('(123,456.79)');
 	});
+
+	it('formats -3770.75, to three decimal places, as "(3,770.750)', function () {
+		expect(decimalFormatter(-3770.75 , 3, ',', true)).toEqual('(3,770.750)');
+	});
 });
 
 describe('when using the "decimal" formatter to format with parenthesis and no thousands separator', function() {

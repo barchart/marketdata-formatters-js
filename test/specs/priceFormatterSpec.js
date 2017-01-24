@@ -12,6 +12,10 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(377, '2')).toEqual('377.000');
 		});
 
+		it('formats -377 (with unit code 2) as "-377.000"', function() {
+			expect(priceFormatter.format(-377, '2')).toEqual('-377.000');
+		});
+
 		it('formats 377.5 (with unit code 2) as "377.500"', function() {
 			expect(priceFormatter.format(377.5, '2')).toEqual('377.500');
 		});
@@ -74,6 +78,10 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(377, '2')).toEqual('377.000');
 		});
 
+		it('formats -377 (with unit code 2) as "-377.000"', function() {
+			expect(priceFormatter.format(-377, '2')).toEqual('-377.000');
+		});
+
 		it('formats 377.5 (with unit code 2) as "377.500"', function() {
 			expect(priceFormatter.format(377.5, '2')).toEqual('377.500');
 		});
@@ -92,6 +100,10 @@ describe('When a price formatter is created', function() {
 
 		it('formats 377000.75 (with unit code 2) as "377,000.750"', function() {
 			expect(priceFormatter.format(377000.75, '2')).toEqual('377,000.750');
+		});
+
+		it('formats -377000.75 (with unit code 2) as "-377,000.750"', function() {
+			expect(priceFormatter.format(-377000.75, '2')).toEqual('-377,000.750');
 		});
 
 		it('formats 3770000.75 (with unit code 2) as "3,770,000.750"', function() {
@@ -136,8 +148,16 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(123, '2')).toEqual('123-0');
 		});
 
+		it('formats -123 (with unit code 2) as "-123-0"', function() {
+			expect(priceFormatter.format(-123, '2')).toEqual('-123-0');
+		});
+
 		it('formats 123.5 (with unit code 2) as "123-4"', function() {
 			expect(priceFormatter.format(123.5, '2')).toEqual('123-4');
+		});
+
+		it('formats -123.5 (with unit code 2) as "-123-4"', function() {
+			expect(priceFormatter.format(-123.5, '2')).toEqual('-123-4');
 		});
 
 		it('formats 0.5 (with unit code 2) as "0-4"', function() {
@@ -179,15 +199,27 @@ describe('When a price formatter is created', function() {
 
 	describe('with a dash separator and special fractions', function() {
 		beforeEach(function() {
-			priceFormatter = new PriceFormatter('-', true, true);
+			priceFormatter = new PriceFormatter('-', true);
 		});
 
 		it('formats 123.625 (with unit code 5) as "123-200"', function() {
 			expect(priceFormatter.format(123.625, '5')).toEqual('123-200');
 		});
 
+		it('formats -123.625 (with unit code 5) as "-123-200"', function() {
+			expect(priceFormatter.format(-123.625, '5')).toEqual('-123-200');
+		});
+
 		it('formats 123.640625 (with unit code 5) as "123-205"', function() {
 			expect(priceFormatter.format(123.640625, '5')).toEqual('123-205');
+		});
+
+		it('formats -123.640625 (with unit code 5) as "-123-205"', function() {
+			expect(priceFormatter.format(-123.640625, '5')).toEqual('-123-205');
+		});
+
+		it('formats 0 (with unit code 2) as "0"', function () {
+			expect(priceFormatter.format(0, '2')).toEqual('0-0');
 		});
 	});
 
@@ -204,8 +236,16 @@ describe('When a price formatter is created', function() {
 			expect(priceFormatter.format(123.5, '2')).toEqual('123\'4');
 		});
 
+		it('formats -123.5 (with unit code 2) as "-123\'4"', function() {
+			expect(priceFormatter.format(-123.5, '2')).toEqual('-123\'4');
+		});
+
 		it('formats 0.5 (with unit code 2) as "0\'4"', function() {
 			expect(priceFormatter.format(0.5, '2')).toEqual('0\'4');
+		});
+
+		it('formats -0.5 (with unit code 2) as "-0\'4"', function() {
+			expect(priceFormatter.format(-0.5, '2')).toEqual('-0\'4');
 		});
 
 		it('formats 0 (with unit code 2) as "0\'0"', function() {
@@ -264,6 +304,144 @@ describe('When a price formatter is created', function() {
 
 		it('formats Number.NaN (with unit code 2) as zero-length string', function() {
 			expect(priceFormatter.format(Number.NaN, '2')).toEqual('');
+		});
+	});
+
+	describe('with parenthetical negatives', function() {
+		describe('and a decimal separator, no special fractions, and no thousands separator', function() {
+			beforeEach(function() {
+				priceFormatter = new PriceFormatter('.', false, '', true);
+			});
+
+			it('formats 3770.75 (with unit code 2) as "3770.750"', function() {
+				expect(priceFormatter.format(3770.75, '2')).toEqual('3770.750');
+			});
+
+			it('formats -3770.75 (with unit code 2) as "(3770.750)"', function() {
+				expect(priceFormatter.format(-3770.75, '2')).toEqual('(3770.750)');
+			});
+
+			it('formats 0 (with unit code 2) as "0.000"', function() {
+				expect(priceFormatter.format(0, '2')).toEqual('0.000');
+			});
+		});
+
+		describe('with a decimal separator, no special fractions, and a thousands separator', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('.', false, ',', true);
+			});
+
+			it('formats 3770.75 (with unit code 2) as "3,770.750"', function() {
+				expect(priceFormatter.format(3770.75, '2')).toEqual('3,770.750');
+			});
+
+			it('formats -3770.75 (with unit code 2) as "(3,770.750)"', function() {
+				expect(priceFormatter.format(-3770.75, '2')).toEqual('(3,770.750)');
+			});
+
+			it('formats 0 (with unit code 2) as "0.000"', function() {
+				expect(priceFormatter.format(0, '2')).toEqual('0.000');
+			});
+		});
+
+		describe('with a dash separator and no special fractions', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('-', false, '', true);
+			});
+
+			it('formats 123 (with unit code 2) as "123-0"', function () {
+				expect(priceFormatter.format(123, '2')).toEqual('123-0');
+			});
+
+			it('formats -123 (with unit code 2) as "(123-0)"', function () {
+				expect(priceFormatter.format(-123, '2')).toEqual('(123-0)');
+			});
+
+			it('formats 123.5 (with unit code 2) as "123-4"', function () {
+				expect(priceFormatter.format(123.5, '2')).toEqual('123-4');
+			});
+
+			it('formats -123.5 (with unit code 2) as "(123-4)"', function () {
+				expect(priceFormatter.format(-123.5, '2')).toEqual('(123-4)');
+			});
+
+			it('formats 0.5 (with unit code 2) as "0-4"', function() {
+				expect(priceFormatter.format(0.5, '2')).toEqual('0-4');
+			});
+
+			it('formats -0.5 (with unit code 2) as "(0-4)"', function() {
+				expect(priceFormatter.format(-0.5, '2')).toEqual('(0-4)');
+			});
+
+			it('formats 0 (with unit code 2) as "0"', function () {
+				expect(priceFormatter.format(0, '2')).toEqual('0-0');
+			});
+		});
+
+		describe('with a dash separator and special fractions', function() {
+			beforeEach(function() {
+				priceFormatter = new PriceFormatter('-', true, '', true);
+			});
+
+			it('formats 123.625 (with unit code 5) as "123-200"', function() {
+				expect(priceFormatter.format(123.625, '5')).toEqual('123-200');
+			});
+
+			it('formats -123.625 (with unit code 5) as "(123-200)"', function() {
+				expect(priceFormatter.format(-123.625, '5')).toEqual('(123-200)');
+			});
+
+			it('formats 123.640625 (with unit code 5) as "123-205"', function() {
+				expect(priceFormatter.format(123.640625, '5')).toEqual('123-205');
+			});
+
+			it('formats -123.640625 (with unit code 5) as "(123-205)"', function() {
+				expect(priceFormatter.format(-123.640625, '5')).toEqual('(123-205)');
+			});
+		});
+
+		describe('with a tick separator and no special fractions', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('\'', false, '', true);
+			});
+
+			it('formats 123.5 (with unit code 2) as "123\'4"', function () {
+				expect(priceFormatter.format(123.5, '2')).toEqual('123\'4');
+			});
+
+			it('formats -123.5 (with unit code 2) as "(123\'4)"', function () {
+				expect(priceFormatter.format(-123.5, '2')).toEqual('(123\'4)');
+			});
+
+			it('formats 0.5 (with unit code 2) as "0\'4"', function() {
+				expect(priceFormatter.format(0.5, '2')).toEqual('0\'4');
+			});
+
+			it('formats -0.5 (with unit code 2) as "(0\'4)"', function() {
+				expect(priceFormatter.format(-0.5, '2')).toEqual('(0\'4)');
+			});
+
+			it('formats 0 (with unit code 2) as "0\'0"', function() {
+				expect(priceFormatter.format(0, '2')).toEqual('0\'0');
+			});
+		});
+
+		describe('with no separator and no special fractions', function() {
+			beforeEach(function () {
+				priceFormatter = new PriceFormatter('', false, '', true);
+			});
+
+			it('formats 0.5 (with unit code 2) as "4"', function () {
+				expect(priceFormatter.format(0.5, '2')).toEqual('4');
+			});
+
+			it('formats -0.5 (with unit code 2) as "(4)"', function () {
+				expect(priceFormatter.format(-0.5, '2')).toEqual('(4)');
+			});
+
+			it('formats 0 (with unit code 2) as "0"', function () {
+				expect(priceFormatter.format(0, '2')).toEqual('0');
+			});
 		});
 	});
 });

@@ -1,11 +1,13 @@
 var gulp = require('gulp');
 
+var babelify = require('babelify');
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var bump = require('gulp-bump');
 var git = require('gulp-git');
 var gitStatus = require('git-get-status');
 var glob = require('glob');
+var helpers = require('babelify-external-helpers');
 var jasmine = require('gulp-jasmine');
 var jsdoc = require('gulp-jsdoc3');
 var jshint = require('gulp-jshint');
@@ -129,7 +131,7 @@ gulp.task('release', function (callback) {
 
 gulp.task('lint', function() {
     return gulp.src([ './lib/**/*.js', './test/specs/**/*.js' ])
-        .pipe(jshint())
+        .pipe(jshint({'esversion': 6}))
         .pipe(jshint.reporter('default'));
 });
 

@@ -1028,8 +1028,6 @@ module.exports = function () {
 		return instrumentType !== null && instrumentType.type === type;
 	}
 
-	console.log('here');
-
 	var symbolParser = {
 		parseInstrumentType: function parseInstrumentType(symbol) {
 			if (typeof symbol !== 'string') {

@@ -1,6 +1,8 @@
 var parseMessage = require('../../lib/messageParser');
 
 describe('when parsing an XML refresh message', function() {
+	'use strict';
+
 	describe('for an instrument that has settled and has a postmarket (form-T) trade', function() {
 		var x;
 
@@ -111,9 +113,26 @@ describe('when parsing an XML refresh message', function() {
 			expect(x.tradeTime.getTime()).toEqual((new Date(2017, 1, 22, 11, 17, 51)).getTime());
 		});
 	});
+
+	describe('for an instrument that has not opened and has no form-T session', function() {
+		var x;
+
+		beforeEach(function() {
+			x = parseMessage(`%<QUOTE symbol="BAC" name="Bank of America Corp" exchange="NYSE" basecode="A" pointvalue="1.0" tickincrement="1" ddfexchange="N" lastupdate="20160920152208" bid="1558" bidsize="20" ask="1559" asksize="1" mode="I">
+					<SESSION day="J" session="R" timestamp="20160920160021" open="1574" high="1576" low="1551" previous="1559" tradesize="1483737" volume="67399368" numtrades="96903" pricevolume="1041029293.48" tradetime="20160920160021" ticks=".." id="combined"/>
+					<SESSION day="I" timestamp="20160919000000" open="1555" high="1578" low="1555" last="1559" previous="1549" settlement="1559" volume="66174800" ticks=".." id="previous"/>
+					</QUOTE>`);
+		});
+
+		it('the "previousPrice" should come from the "combined" session', function() {
+			expect(x.previousPrice).toEqual(15.59);
+		});
+	});
 });
 
 describe('when parsing a DDF message', function() {
+	'use strict';
+
 	describe('for a 2,Z message for SIRI, 3@3.94', function() {
 		var x;
 

@@ -1,7 +1,7 @@
 # @barchart/marketdata-utilities-js
 ## JavaScript library for working with Barchart's DDF messages
 
-This library provides common code for parsing and interpreting DDF messages (a proprietary, string-based protocol for market data). The library is intended for use in client (i.e. browser) and server (i.e. Node.js) environments. However, since the source code uses ES6, some assembly may be required for browser use (i.e. polyfills and transpilation).
+This library provides common code for parsing and interpreting DDF messages (a proprietary, string-based protocol used for market data messages). The library is intended for use in client (i.e. browser) and server (i.e. Node.js) environments. However, since the source code uses ES6, some assembly may be required for browser use (i.e. polyfills and transpilation).
 
 
 ### npm

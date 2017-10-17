@@ -8,25 +8,23 @@ This library provides common code for parsing and interpreting DDF messages (a p
 
 To import the library as a dependency to your application using npm, use the following command:
 
+	> npm install @barchart/marketdata-utilities-js -S
 
-	npm install @barchart/marketdata-utilities-js -S
 
+### Source control
 
-### Souce control
-
-The git repository is publicly-accessible here:
-
-	https://github.com/barchart/marketdata-utilities-js
+The git repository is publicly-accessible (here)[https://github.com/barchart/marketdata-utilities-js].
 
 
 ## Documentation
 
-(JSDoc)[http://usejsdoc.org/] is used to document the source code. HTML documentation can be generated from the source code as follows:
+(JSDoc)[http://usejsdoc.org/] is used to document the source code. HTML documentation can be generated (into a "docs" folder), as follows:
 
 	> gulp document
 
+
 ## Unit Testing
 
-Gulp and Jasmine are used. Execute unit tests, as follows:
+Execute the (Jasmine)[https://jasmine.github.io/] unit tests, as follows:
 
 	> gulp test

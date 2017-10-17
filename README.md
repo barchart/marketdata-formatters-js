@@ -1,46 +1,32 @@
-# marketdata-utilities-js
-## Javascript library for working with proprietary DDF messages
+# @barchart/marketdata-utilities-js
+## JavaScript library for working with Barchart's DDF messages
 
-##Setup
-
-This library is intended for use in the browser or headless JavaScript environments
-(i.e. Node.js). It has been released via the usual package managers.
+This library provides common code for parsing and interpreting DDF messages (a proprietary, string-based protocol for market data). The library is intended for use in client (i.e. browser) and server (i.e. Node.js) environments. However, since the source code uses ES6, some assembly may be required for browser use (i.e. polyfills and transpilation).
 
 
-###npm
+### npm
 
 To import the library as a dependency to your application using npm, use the following command:
 
 
-	npm install barchart-marketdata-utilities -S
+	npm install @barchart/marketdata-utilities-js -S
 
 
-###bower
-
-To import the library as a dependency to your application using bower, use the following command:
-
-
-	bower install barchart-marketdata-utilities -S
-
-
-###git
+### Souce control
 
 The git repository is publicly-accessible here:
-
 
 	https://github.com/barchart/marketdata-utilities-js
 
 
+## Documentation
 
-##Documentation
+(JSDoc)[http://usejsdoc.org/] is used to document the source code. HTML documentation can be generated from the source code as follows:
 
-Generate documentation using the following command:
+	> gulp document
 
-	gulp document
-
-
-##Unit Testing
+## Unit Testing
 
 Gulp and Jasmine are used. Execute unit tests, as follows:
 
-	gulp test
+	> gulp test

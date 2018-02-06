@@ -240,8 +240,88 @@ describe('When parsing a symbol for instrument type', function() {
 			expect(instrumentType.symbol).toEqual('-001A');
 		});
 
-		it('the "type" should be "index"', function() {
+		it('the "type" should be "sector"', function() {
 			expect(instrumentType.type).toEqual('sector');
+		});
+	});
+
+	describe('and the symbol is ESZ2660Q', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ESZ2660Q');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ESZ2660Q"', function() {
+			expect(instrumentType.symbol).toEqual('ESZ2660Q');
+		});
+
+		it('the "type" should be "future_option"', function() {
+			expect(instrumentType.type).toEqual('future_option');
+		});
+
+		it('the "root" should be "ES"', function() {
+			expect(instrumentType.root).toEqual('ES');
+		});
+
+		it('the "month" should be "Z"', function() {
+			expect(instrumentType.month).toEqual('Z');
+		});
+
+		it('the "year" should be next year', function() {
+			expect(instrumentType.year).toEqual(new Date().getFullYear()+1);
+		});
+
+		it('the "strike" should be 2660', function() {
+			expect(instrumentType.strike).toEqual(2660);
+		});
+
+		it('the "option_type" should be "put"', function() {
+			expect(instrumentType.option_type).toEqual('put');
+		});
+	});
+
+	describe('and the symbol is ZWH8|470C', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('ZWH8|470C');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "ZWH8|470C"', function() {
+			expect(instrumentType.symbol).toEqual('ZWH8|470C');
+		});
+
+		it('the "type" should be "future_option"', function() {
+			expect(instrumentType.type).toEqual('future_option');
+		});
+
+		it('the "root" should be "ZW"', function() {
+			expect(instrumentType.root).toEqual('ZW');
+		});
+
+		it('the "month" should be "H"', function() {
+			expect(instrumentType.month).toEqual('H');
+		});
+
+		it('the "year" should be 2018', function() {
+			expect(instrumentType.year).toEqual(2018);
+		});
+
+		it('the "strike" should be 470', function() {
+			expect(instrumentType.strike).toEqual(470);
+		});
+
+		it('the "option_type" should be "call"', function() {
+			expect(instrumentType.option_type).toEqual('call');
 		});
 	});
 });
@@ -293,6 +373,14 @@ describe('When checking to see if a symbol is a future', function() {
 
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
 		expect(symbolParser.getIsFuture('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2660Q" should return false', function() {
+		expect(symbolParser.getIsFuture('ESZ2660Q')).toEqual(false);
+	});
+
+	it('the symbol "ZWH8|470C" should return false', function() {
+		expect(symbolParser.getIsFuture('ZWH8|470C')).toEqual(false);
 	});
 });
 
@@ -388,6 +476,14 @@ describe('When checking to see if a symbol is sector', function() {
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
 		expect(symbolParser.getIsSector('_S_SP_ZCH7_ZCK7')).toEqual(false);
 	});
+
+	it('the symbol "ESZ2660Q" should return false', function() {
+		expect(symbolParser.getIsSector('ESZ2660Q')).toEqual(false);
+	});
+
+	it('the symbol "ZWH8|470C" should return false', function() {
+		expect(symbolParser.getIsSector('ZWH8|470C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is forex', function() {
@@ -438,6 +534,14 @@ describe('When checking to see if a symbol is forex', function() {
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
 		expect(symbolParser.getIsForex('_S_SP_ZCH7_ZCK7')).toEqual(false);
 	});
+
+	it('the symbol "ESZ2660Q" should return false', function() {
+		expect(symbolParser.getIsForex('ESZ2660Q')).toEqual(false);
+	});
+
+	it('the symbol "ZWH8|470C" should return false', function() {
+		expect(symbolParser.getIsForex('ZWH8|470C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a future spread', function() {
@@ -487,6 +591,14 @@ describe('When checking to see if a symbol is a future spread', function() {
 
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return true', function() {
 		expect(symbolParser.getIsFutureSpread('_S_SP_ZCH7_ZCK7')).toEqual(true);
+	});
+
+	it('the symbol "ESZ2660Q" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ESZ2660Q')).toEqual(false);
+	});
+
+	it('the symbol "ZWH8|470C" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ZWH8|470C')).toEqual(false);
 	});
 });
 
@@ -543,5 +655,63 @@ describe('When getting a producer symbol', function() {
 
 	it('^EURUSD should map to ^EURUSD', function() {
 		expect(symbolParser.getProducerSymbol('^EURUSD')).toEqual('^EURUSD');
+	});
+});
+
+describe('When checking to see if a symbol is a future option', function() {
+	it('the symbol "ESZ6" should return false', function() {
+		expect(symbolParser.getIsFutureOption('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function() {
+		expect(symbolParser.getIsFutureOption('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function() {
+		expect(symbolParser.getIsFutureOption('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ESZ016" should return false', function() {
+		expect(symbolParser.getIsFutureOption('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return false', function() {
+		expect(symbolParser.getIsFutureOption('O!H7')).toEqual(false);
+	});
+
+	it('the symbol "O!H17" should return false', function() {
+		expect(symbolParser.getIsFutureOption('O!H17')).toEqual(false);
+	});
+
+	it('the symbol "O!H2017" should return false', function() {
+		expect(symbolParser.getIsFutureOption('O!H2017')).toEqual(false);
+	});
+
+	it('the symbol "IBM" should return false', function() {
+		expect(symbolParser.getIsFutureOption('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return false', function() {
+		expect(symbolParser.getIsFutureOption('^EURUSD')).toEqual(false);
+	});
+
+	it('the symbol "-001A" should return false', function() {
+		expect(symbolParser.getIsFutureOption('-001A')).toEqual(false);
+	});
+
+	it('the symbol "$DOWI" should return false', function() {
+		expect(symbolParser.getIsFutureOption('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
+		expect(symbolParser.getIsFutureOption('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2660Q" should return true', function() {
+		expect(symbolParser.getIsFutureOption('ESZ2660Q')).toEqual(true);
+	});
+
+	it('the symbol "ZWH8|470C" should return true', function() {
+		expect(symbolParser.getIsFutureOption('ZWH8|470C')).toEqual(true);
 	});
 });

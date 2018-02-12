@@ -1029,6 +1029,10 @@ module.exports = function () {
 	    batsRegex = /^(.*)\.BZ$/i,
 	    usePercentRegex = /(\.RT)$/;
 
+	var altMonthCodes = {
+		A: 'F', B: 'G', C: 'H', D: 'J', E: 'K', I: 'M', L: 'N', O: 'Q', P: 'U', R: 'V', S: 'X', T: 'Z'
+	};
+
 	function getIsType(symbol, type) {
 		var instrumentType = symbolParser.parseInstrumentType(symbol);
 
@@ -1132,17 +1136,13 @@ module.exports = function () {
 			var longFutureOptionMatch = symbol.match(longFutureOptionRegex);
 
 			if (longFutureOptionMatch !== null) {
-				var altMonthCodes = {
-					A: "F", B: "G", C: "H", D: "J", E: "K", I: "M", L: "N", O: "Q", P: "U", R: "V", S: "X", T: "Z"
-				};
-
 				var month = longFutureOptionMatch[2];
 
 				return {
 					symbol: symbol,
 					type: 'future_option',
 					root: longFutureOptionMatch[1],
-					month: altMonthCodes[month] !== undefined ? altMonthCodes[month] : month,
+					month: altMonthCodes.hasOwnProperty(month) ? altMonthCodes[month] : month,
 					year: getFuturesYear(longFutureOptionMatch[3]),
 					strike: parseInt(longFutureOptionMatch[4]),
 					option_type: longFutureOptionMatch[5] === 'C' ? 'call' : 'put'

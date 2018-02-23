@@ -225,6 +225,26 @@ describe('When parsing a symbol for instrument type', function() {
 		});
 	});
 
+	describe('and the symbol is $SG1E', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('$SG1E');
+		});
+
+		it('the result should not be null', function() {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "$SG1E"', function() {
+			expect(instrumentType.symbol).toEqual('$SG1E');
+		});
+
+		it('the "type" should be "index"', function() {
+			expect(instrumentType.type).toEqual('index');
+		});
+	});
+
 	describe('and the symbol is -001A', function() {
 		var instrumentType;
 
@@ -371,6 +391,10 @@ describe('When checking to see if a symbol is a future', function() {
 		expect(symbolParser.getIsFuture('$DOWI')).toEqual(false);
 	});
 
+	it('the symbol "$SG1E" should return false', function() {
+		expect(symbolParser.getIsFuture('$SG1E')).toEqual(false);
+	});
+
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
 		expect(symbolParser.getIsFuture('_S_SP_ZCH7_ZCK7')).toEqual(false);
 	});
@@ -473,6 +497,10 @@ describe('When checking to see if a symbol is sector', function() {
 		expect(symbolParser.getIsSector('$DOWI')).toEqual(false);
 	});
 
+	it('the symbol "$S1GE" should return false', function() {
+		expect(symbolParser.getIsSector('$S1GE')).toEqual(false);
+	});
+
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
 		expect(symbolParser.getIsSector('_S_SP_ZCH7_ZCK7')).toEqual(false);
 	});
@@ -529,6 +557,9 @@ describe('When checking to see if a symbol is forex', function() {
 
 	it('the symbol "$DOWI" should return false', function() {
 		expect(symbolParser.getIsForex('$DOWI')).toEqual(false);
+	});
+	it('the symbol "$S1GE" should return false', function() {
+		expect(symbolParser.getIsForex('$S1GE')).toEqual(false);
 	});
 
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {
@@ -587,6 +618,10 @@ describe('When checking to see if a symbol is a future spread', function() {
 
 	it('the symbol "$DOWI" should return false', function() {
 		expect(symbolParser.getIsFutureSpread('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "$S1GE" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('$S1GE')).toEqual(false);
 	});
 
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return true', function() {
@@ -701,6 +736,10 @@ describe('When checking to see if a symbol is a future option', function() {
 
 	it('the symbol "$DOWI" should return false', function() {
 		expect(symbolParser.getIsFutureOption('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "$S1GE" should return false', function() {
+		expect(symbolParser.getIsFutureOption('$S1GE')).toEqual(false);
 	});
 
 	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function() {

@@ -406,6 +406,10 @@ describe('When checking to see if a symbol is a future', function() {
 	it('the symbol "ZWH8|470C" should return false', function() {
 		expect(symbolParser.getIsFuture('ZWH8|470C')).toEqual(false);
 	});
+
+	it('the symbol "BB1F8|12050C" should return false', function() {
+		expect(symbolParser.getIsFuture('BB1F8|12050C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a "concrete" future', function() {
@@ -512,6 +516,10 @@ describe('When checking to see if a symbol is sector', function() {
 	it('the symbol "ZWH8|470C" should return false', function() {
 		expect(symbolParser.getIsSector('ZWH8|470C')).toEqual(false);
 	});
+
+	it('the symbol "BB1F8|12050C" should return false', function() {
+		expect(symbolParser.getIsSector('BB1F8|12050C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is forex', function() {
@@ -572,6 +580,10 @@ describe('When checking to see if a symbol is forex', function() {
 
 	it('the symbol "ZWH8|470C" should return false', function() {
 		expect(symbolParser.getIsForex('ZWH8|470C')).toEqual(false);
+	});
+
+	it('the symbol "BB1F8|12050C" should return false', function() {
+		expect(symbolParser.getIsForex('BB1F8|12050C')).toEqual(false);
 	});
 });
 
@@ -634,6 +646,10 @@ describe('When checking to see if a symbol is a future spread', function() {
 
 	it('the symbol "ZWH8|470C" should return false', function() {
 		expect(symbolParser.getIsFutureSpread('ZWH8|470C')).toEqual(false);
+	});
+
+	it('the symbol "BB1F8|12050C" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('BB1F8|12050C')).toEqual(false);
 	});
 });
 
@@ -752,5 +768,9 @@ describe('When checking to see if a symbol is a future option', function() {
 
 	it('the symbol "ZWH8|470C" should return true', function() {
 		expect(symbolParser.getIsFutureOption('ZWH8|470C')).toEqual(true);
+	});
+
+	it('the symbol "BB1F8|12050C" should return true', function() {
+		expect(symbolParser.getIsFutureOption('BB1F8|12050C')).toEqual(true);
 	});
 });

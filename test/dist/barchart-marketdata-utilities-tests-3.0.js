@@ -1018,11 +1018,11 @@ module.exports = function () {
 
 	var exchangeRegex = /^(.*)\\.([A-Z]{1,4})$/i,
 	    jerqFutureConversionRegex = /(.{1,3})([A-Z]{1})([0-9]{3}|[0-9]{1})?([0-9]{1})$/i,
-	    concreteFutureRegex = /^(.{1,3})([A-Z]{1})([0-9]{4}|[0-9]{1,2})$/i,
-	    referenceFutureRegex = /^(.{1,3})(\*{1})([0-9]{1})$/i,
+	    concreteFutureRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z]{1})([0-9]{4}|[0-9]{1,2})$/i,
+	    referenceFutureRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})(\*{1})([0-9]{1})$/i,
 	    futureSpreadRegex = /^_S_/i,
-	    shortFutureOptionRegex = /^(.{1,2})([A-Z])([0-9]{1,4})([A-Z])$/i,
-	    longFutureOptionRegex = /^(.{1,3})([A-Z])([0-9]{1,4})\|(\-?[0-9]{1,5})(C|P)$/i,
+	    shortFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]?)([A-Z])([0-9]{1,4})([A-Z])$/i,
+	    longFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{1,4})\|(\-?[0-9]{1,5})(C|P)$/i,
 	    forexRegex = /^\^([A-Z]{3})([A-Z]{3})$/i,
 	    sectorRegex = /^\-(.*)$/i,
 	    indexRegex = /^\$(.*)$/i,
@@ -3635,6 +3635,10 @@ describe('When checking to see if a symbol is a future', function () {
 	it('the symbol "ZWH8|470C" should return false', function () {
 		expect(symbolParser.getIsFuture('ZWH8|470C')).toEqual(false);
 	});
+
+	it('the symbol "BB1F8|12050C" should return false', function () {
+		expect(symbolParser.getIsFuture('BB1F8|12050C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a "concrete" future', function () {
@@ -3741,6 +3745,10 @@ describe('When checking to see if a symbol is sector', function () {
 	it('the symbol "ZWH8|470C" should return false', function () {
 		expect(symbolParser.getIsSector('ZWH8|470C')).toEqual(false);
 	});
+
+	it('the symbol "BB1F8|12050C" should return false', function () {
+		expect(symbolParser.getIsSector('BB1F8|12050C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is forex', function () {
@@ -3801,6 +3809,10 @@ describe('When checking to see if a symbol is forex', function () {
 
 	it('the symbol "ZWH8|470C" should return false', function () {
 		expect(symbolParser.getIsForex('ZWH8|470C')).toEqual(false);
+	});
+
+	it('the symbol "BB1F8|12050C" should return false', function () {
+		expect(symbolParser.getIsForex('BB1F8|12050C')).toEqual(false);
 	});
 });
 
@@ -3863,6 +3875,10 @@ describe('When checking to see if a symbol is a future spread', function () {
 
 	it('the symbol "ZWH8|470C" should return false', function () {
 		expect(symbolParser.getIsFutureSpread('ZWH8|470C')).toEqual(false);
+	});
+
+	it('the symbol "BB1F8|12050C" should return false', function () {
+		expect(symbolParser.getIsFutureSpread('BB1F8|12050C')).toEqual(false);
 	});
 });
 
@@ -3981,6 +3997,10 @@ describe('When checking to see if a symbol is a future option', function () {
 
 	it('the symbol "ZWH8|470C" should return true', function () {
 		expect(symbolParser.getIsFutureOption('ZWH8|470C')).toEqual(true);
+	});
+
+	it('the symbol "BB1F8|12050C" should return true', function () {
+		expect(symbolParser.getIsFutureOption('BB1F8|12050C')).toEqual(true);
 	});
 });
 

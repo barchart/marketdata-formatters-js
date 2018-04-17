@@ -1023,6 +1023,7 @@ module.exports = function () {
 	    futureSpreadRegex = /^_S_/i,
 	    shortFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]?)([A-Z])([0-9]{1,4})([A-Z])$/i,
 	    longFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{1,4})\|(\-?[0-9]{1,5})(C|P)$/i,
+	    historicalFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{2})([0-9]{1,5})(C|P)$/i,
 	    forexRegex = /^\^([A-Z]{3})([A-Z]{3})$/i,
 	    sectorRegex = /^\-(.*)$/i,
 	    indexRegex = /^\$(.*)$/i,
@@ -1161,18 +1162,19 @@ module.exports = function () {
 			}
 
 			var longFutureOptionMatch = symbol.match(longFutureOptionRegex);
+			var futureOptionMatch = longFutureOptionMatch !== null ? longFutureOptionMatch : symbol.match(historicalFutureOptionRegex);
 
-			if (longFutureOptionMatch !== null) {
-				var month = longFutureOptionMatch[2];
+			if (futureOptionMatch !== null) {
+				var month = futureOptionMatch[2];
 
 				return {
 					symbol: symbol,
 					type: 'future_option',
-					root: longFutureOptionMatch[1],
+					root: futureOptionMatch[1],
 					month: altMonthCodes.hasOwnProperty(month) ? altMonthCodes[month] : month,
-					year: getFuturesYear(longFutureOptionMatch[3]),
-					strike: parseInt(longFutureOptionMatch[4]),
-					option_type: longFutureOptionMatch[5] === 'C' ? 'call' : 'put'
+					year: getFuturesYear(futureOptionMatch[3]),
+					strike: parseInt(futureOptionMatch[4]),
+					option_type: futureOptionMatch[5] === 'C' ? 'call' : 'put'
 				};
 			}
 
@@ -1217,6 +1219,18 @@ module.exports = function () {
 
 		getProducerSymbol: function getProducerSymbol(symbol) {
 			if (typeof symbol === 'string') {
+				var instrumentType = symbolParser.parseInstrumentType(symbol);
+
+				if (instrumentType !== null && instrumentType.type === 'future_option') {
+					var currentDate = new Date();
+					var currentYear = currentDate.getFullYear();
+					var optionType = instrumentType.option_type === 'call' ? 'C' : 'P';
+
+					optionType = String.fromCharCode(optionType.charCodeAt(0) + (instrumentType.year - currentYear));
+
+					return instrumentType.root + instrumentType.month + instrumentType.strike + optionType;
+				}
+
 				return symbol.replace(jerqFutureConversionRegex, '$1$2$4');
 			} else {
 				return null;
@@ -3639,6 +3653,10 @@ describe('When checking to see if a symbol is a future', function () {
 	it('the symbol "BB1F8|12050C" should return false', function () {
 		expect(symbolParser.getIsFuture('BB1F8|12050C')).toEqual(false);
 	});
+
+	it('the symbol "ZWK18465C" should return false', function () {
+		expect(symbolParser.getIsFuture('ZWK18465C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a "concrete" future', function () {
@@ -3749,6 +3767,10 @@ describe('When checking to see if a symbol is sector', function () {
 	it('the symbol "BB1F8|12050C" should return false', function () {
 		expect(symbolParser.getIsSector('BB1F8|12050C')).toEqual(false);
 	});
+
+	it('the symbol "ZWK18465C" should return false', function () {
+		expect(symbolParser.getIsSector('ZWK18465C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is forex', function () {
@@ -3813,6 +3835,10 @@ describe('When checking to see if a symbol is forex', function () {
 
 	it('the symbol "BB1F8|12050C" should return false', function () {
 		expect(symbolParser.getIsForex('BB1F8|12050C')).toEqual(false);
+	});
+
+	it('the symbol "ZWK18465C" should return false', function () {
+		expect(symbolParser.getIsForex('ZWK18465C')).toEqual(false);
 	});
 });
 
@@ -3880,6 +3906,10 @@ describe('When checking to see if a symbol is a future spread', function () {
 	it('the symbol "BB1F8|12050C" should return false', function () {
 		expect(symbolParser.getIsFutureSpread('BB1F8|12050C')).toEqual(false);
 	});
+
+	it('the symbol "ZWK18465C" should return false', function () {
+		expect(symbolParser.getIsFutureSpread('ZWK18465C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a BATS listing', function () {
@@ -3935,6 +3965,18 @@ describe('When getting a producer symbol', function () {
 
 	it('^EURUSD should map to ^EURUSD', function () {
 		expect(symbolParser.getProducerSymbol('^EURUSD')).toEqual('^EURUSD');
+	});
+
+	it('ZWK465C should map to ZWK465C', function () {
+		expect(symbolParser.getProducerSymbol('ZWK465C')).toEqual('ZWK465C');
+	});
+
+	it('ZWK18465C should map to ZWK465C', function () {
+		expect(symbolParser.getProducerSymbol('ZWK18465C')).toEqual('ZWK465C');
+	});
+
+	it('ZWK9|465P should map to ZWK465Q', function () {
+		expect(symbolParser.getProducerSymbol('ZWK9|465P')).toEqual('ZWK465Q');
 	});
 });
 
@@ -4001,6 +4043,10 @@ describe('When checking to see if a symbol is a future option', function () {
 
 	it('the symbol "BB1F8|12050C" should return true', function () {
 		expect(symbolParser.getIsFutureOption('BB1F8|12050C')).toEqual(true);
+	});
+
+	it('the symbol "ZWK18465C" should return true', function () {
+		expect(symbolParser.getIsFutureOption('ZWK18465C')).toEqual(true);
 	});
 });
 

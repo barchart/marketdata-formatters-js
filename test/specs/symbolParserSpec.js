@@ -410,6 +410,10 @@ describe('When checking to see if a symbol is a future', function() {
 	it('the symbol "BB1F8|12050C" should return false', function() {
 		expect(symbolParser.getIsFuture('BB1F8|12050C')).toEqual(false);
 	});
+
+	it('the symbol "ZWK18465C" should return false', function() {
+		expect(symbolParser.getIsFuture('ZWK18465C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a "concrete" future', function() {
@@ -520,6 +524,10 @@ describe('When checking to see if a symbol is sector', function() {
 	it('the symbol "BB1F8|12050C" should return false', function() {
 		expect(symbolParser.getIsSector('BB1F8|12050C')).toEqual(false);
 	});
+
+	it('the symbol "ZWK18465C" should return false', function() {
+		expect(symbolParser.getIsSector('ZWK18465C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is forex', function() {
@@ -584,6 +592,10 @@ describe('When checking to see if a symbol is forex', function() {
 
 	it('the symbol "BB1F8|12050C" should return false', function() {
 		expect(symbolParser.getIsForex('BB1F8|12050C')).toEqual(false);
+	});
+
+	it('the symbol "ZWK18465C" should return false', function() {
+		expect(symbolParser.getIsForex('ZWK18465C')).toEqual(false);
 	});
 });
 
@@ -651,6 +663,10 @@ describe('When checking to see if a symbol is a future spread', function() {
 	it('the symbol "BB1F8|12050C" should return false', function() {
 		expect(symbolParser.getIsFutureSpread('BB1F8|12050C')).toEqual(false);
 	});
+
+	it('the symbol "ZWK18465C" should return false', function() {
+		expect(symbolParser.getIsFutureSpread('ZWK18465C')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is a BATS listing', function() {
@@ -706,6 +722,18 @@ describe('When getting a producer symbol', function() {
 
 	it('^EURUSD should map to ^EURUSD', function() {
 		expect(symbolParser.getProducerSymbol('^EURUSD')).toEqual('^EURUSD');
+	});
+
+	it('ZWK465C should map to ZWK465C', function() {
+		expect(symbolParser.getProducerSymbol('ZWK465C')).toEqual('ZWK465C');
+	});
+
+	it('ZWK18465C should map to ZWK465C', function() {
+		expect(symbolParser.getProducerSymbol('ZWK18465C')).toEqual('ZWK465C');
+	});
+
+	it('ZWK9|465P should map to ZWK465Q', function() {
+		expect(symbolParser.getProducerSymbol('ZWK9|465P')).toEqual('ZWK465Q');
 	});
 });
 
@@ -772,5 +800,9 @@ describe('When checking to see if a symbol is a future option', function() {
 
 	it('the symbol "BB1F8|12050C" should return true', function() {
 		expect(symbolParser.getIsFutureOption('BB1F8|12050C')).toEqual(true);
+	});
+
+	it('the symbol "ZWK18465C" should return true', function() {
+		expect(symbolParser.getIsFutureOption('ZWK18465C')).toEqual(true);
 	});
 });

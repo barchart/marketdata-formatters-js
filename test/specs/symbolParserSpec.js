@@ -185,6 +185,19 @@ describe('When parsing a symbol for instrument type', function() {
 		});
 	});
 
+	describe('and the symbol is CLF0', function(){
+		var instrumentType;
+		
+		beforeEach(function() {
+			instrumentType = symbolParser.parseInstrumentType('CLF0');
+		});
+
+		it('the "year" should be 2020', function(){
+			expect(instrumentType.year).toEqual(2020);
+		});
+		
+	});
+
 	describe('and the symbol is ^EURUSD', function() {
 		var instrumentType;
 

@@ -1047,7 +1047,10 @@ module.exports = function () {
 		var year = parseInt(yearString);
 
 		if (year < 10) {
-			year = Math.floor(currentYear / 10) * 10 + year;
+			// if we're beyond the last digit of the year in a decade, assume
+			// this symbol is for the next decade.
+			var bump = year < currentYear % 10 ? 1 : 0;
+			year = Math.floor(currentYear / 10) * 10 + year + bump * 10;
 		} else if (year < 100) {
 			year = Math.floor(currentYear / 100) * 100 + year;
 
@@ -3256,19 +3259,19 @@ describe('When parsing a symbol for instrument type', function () {
 		});
 	});
 
-	describe('and the symbol is ESZ6', function () {
+	describe('and the symbol is ESZ9', function () {
 		var instrumentType;
 
 		beforeEach(function () {
-			instrumentType = symbolParser.parseInstrumentType('ESZ6');
+			instrumentType = symbolParser.parseInstrumentType('ESZ9');
 		});
 
 		it('the result should not be null', function () {
 			expect(instrumentType).not.toBe(null);
 		});
 
-		it('the "symbol" should be "ESZ6"', function () {
-			expect(instrumentType.symbol).toEqual('ESZ6');
+		it('the "symbol" should be "ESZ9"', function () {
+			expect(instrumentType.symbol).toEqual('ESZ9');
 		});
 
 		it('the "type" should be "future"', function () {
@@ -3287,8 +3290,8 @@ describe('When parsing a symbol for instrument type', function () {
 			expect(instrumentType.month).toEqual('Z');
 		});
 
-		it('the "year" should be 2016', function () {
-			expect(instrumentType.year).toEqual(2016);
+		it('the "year" should be 2019', function () {
+			expect(instrumentType.year).toEqual(2019);
 		});
 	});
 
@@ -3425,6 +3428,18 @@ describe('When parsing a symbol for instrument type', function () {
 
 		it('the "dynamicCode" property should be "1"', function () {
 			expect(instrumentType.dynamicCode).toEqual('1');
+		});
+	});
+
+	describe('and the symbol is CLF0', function () {
+		var instrumentType;
+
+		beforeEach(function () {
+			instrumentType = symbolParser.parseInstrumentType('CLF0');
+		});
+
+		it('the "year" should be 2020', function () {
+			expect(instrumentType.year).toEqual(2020);
 		});
 	});
 

@@ -13,19 +13,19 @@ describe('When parsing a symbol for instrument type', function() {
 		});
 	});
 
-	describe('and the symbol is ESZ6', function() {
+	describe('and the symbol is ESZ9', function() {
 		var instrumentType;
 
 		beforeEach(function() {
-			instrumentType = symbolParser.parseInstrumentType('ESZ6');
+			instrumentType = symbolParser.parseInstrumentType('ESZ9');
 		});
 
 		it('the result should not be null', function() {
 			expect(instrumentType).not.toBe(null);
 		});
 
-		it('the "symbol" should be "ESZ6"', function() {
-			expect(instrumentType.symbol).toEqual('ESZ6');
+		it('the "symbol" should be "ESZ9"', function() {
+			expect(instrumentType.symbol).toEqual('ESZ9');
 		});
 
 		it('the "type" should be "future"', function() {
@@ -44,8 +44,8 @@ describe('When parsing a symbol for instrument type', function() {
 			expect(instrumentType.month).toEqual('Z');
 		});
 
-		it('the "year" should be 2016', function() {
-			expect(instrumentType.year).toEqual(2016);
+		it('the "year" should be 2019', function() {
+			expect(instrumentType.year).toEqual(2019);
 		});
 	});
 

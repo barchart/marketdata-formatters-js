@@ -185,7 +185,7 @@ describe('When parsing a symbol for instrument type', function() {
 		});
 	});
 
-	describe('and the symbol is CLF0', function(){
+	describe('and the symbol is CLF0', function() {
 		var instrumentType;
 		
 		beforeEach(function() {
@@ -195,7 +195,42 @@ describe('When parsing a symbol for instrument type', function() {
 		it('the "year" should be 2020', function(){
 			expect(instrumentType.year).toEqual(2020);
 		});
-		
+	});
+
+	describe('and the symbol is CLF1 and the year is 2019', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			var getFullYear = Date.prototype.getFullYear;
+
+			Date.prototype.getFullYear = function() { return 2019; };
+
+			instrumentType = symbolParser.parseInstrumentType('CLF1');
+
+			Date.prototype.getFullYear = getFullYear;
+		});
+
+		it('the "year" should be 2021', function(){
+			expect(instrumentType.year).toEqual(2021);
+		});
+	});
+
+	describe('and the symbol is CLF9 and the year is 2019', function() {
+		var instrumentType;
+
+		beforeEach(function() {
+			var getFullYear = Date.prototype.getFullYear;
+
+			Date.prototype.getFullYear = function() { return 2019; };
+
+			instrumentType = symbolParser.parseInstrumentType('CLF9');
+
+			Date.prototype.getFullYear = getFullYear;
+		});
+
+		it('the "year" should be 2019', function(){
+			expect(instrumentType.year).toEqual(2019);
+		});
 	});
 
 	describe('and the symbol is ^EURUSD', function() {

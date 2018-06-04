@@ -783,6 +783,18 @@ describe('When getting a producer symbol', function() {
 	it('ZWK9|465P should map to ZWK465Q', function() {
 		expect(symbolParser.getProducerSymbol('ZWK9|465P')).toEqual('ZWK465Q');
 	});
+
+	it('BZ6N8|25C should map to BZ6N8|25C', function() {
+		expect(symbolParser.getProducerSymbol('BZ6N8|25C')).toEqual('BZ6N8|25C');
+	});
+
+	it('BZ6N9|25P should map to BZ6N9|25P', function() {
+		expect(symbolParser.getProducerSymbol('BZ6N9|25P')).toEqual('BZ6N9|25P');
+	});
+
+	it('BZ6N20|25P should map to BZ6N20|25P', function() {
+		expect(symbolParser.getProducerSymbol('BZ6N20|25P')).toEqual('BZ6N0|25P');
+	});
 });
 
 describe('When checking to see if a symbol is a future option', function() {

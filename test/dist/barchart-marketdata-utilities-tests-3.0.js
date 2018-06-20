@@ -569,6 +569,7 @@ module.exports = function () {
 								message.timestamp = new Date(parseInt(msg.substr(2, 4)), parseInt(msg.substr(6, 2)) - 1, parseInt(msg.substr(8, 2)), parseInt(msg.substr(10, 2)), parseInt(msg.substr(12, 2)), parseInt(msg.substr(14, 2)));
 								break;
 							}
+						case 'C':
 						case '2':
 							{
 								message.record = '2';

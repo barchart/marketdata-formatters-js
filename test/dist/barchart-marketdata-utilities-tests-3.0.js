@@ -1001,6 +1001,9 @@ var Converter = require('./convert');
 
 module.exports = function () {
 
+    /**
+     * Adapted from legacy code: https://github.com/barchart/php-jscharts/blob/372deb9b4d9ee678f32b6f8c4268434249c1b4ac/chart_package/webroot/js/deps/ddfplus/com.ddfplus.js
+     */
     return function (string, unitCode) {
         var baseCode = Converter.unitCodeToBaseCode(unitCode);
 

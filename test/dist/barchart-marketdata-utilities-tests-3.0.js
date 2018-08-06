@@ -265,7 +265,7 @@ module.exports = function () {
 	};
 }();
 
-},{"lodash.isnan":13}],5:[function(require,module,exports){
+},{"lodash.isnan":14}],5:[function(require,module,exports){
 'use strict';
 
 var parseValue = require('./priceParser'),
@@ -746,7 +746,7 @@ module.exports = function () {
 	};
 }();
 
-},{"./common/xml/XmlDomParser":2,"./priceParser":8,"./timestampParser":12}],6:[function(require,module,exports){
+},{"./common/xml/XmlDomParser":2,"./priceParser":8,"./timestampParser":13}],6:[function(require,module,exports){
 "use strict";
 
 module.exports = function () {
@@ -918,7 +918,7 @@ module.exports = function () {
 	};
 }();
 
-},{"./decimalFormatter":4,"lodash.isnan":13}],8:[function(require,module,exports){
+},{"./decimalFormatter":4,"lodash.isnan":14}],8:[function(require,module,exports){
 'use strict';
 
 module.exports = function () {
@@ -997,6 +997,43 @@ module.exports = function () {
 },{}],9:[function(require,module,exports){
 'use strict';
 
+var Converter = require('./convert');
+
+module.exports = function () {
+
+    return function (string, unitCode) {
+        var baseCode = Converter.unitCodeToBaseCode(unitCode);
+
+        // Fix for 10-Yr T-Notes
+        if (baseCode === -4 && (string.length === 7 || string.length === 6 && string.charAt(0) !== '1')) {
+            baseCode -= 1;
+        }
+
+        if (baseCode >= 0) {
+            var ival = string * 1;
+            return Math.round(ival * Math.pow(10, baseCode)) / Math.pow(10, baseCode);
+        } else {
+            var has_dash = string.match(/-/);
+            var divisor = Math.pow(2, Math.abs(baseCode) + 2);
+            var fracsize = String(divisor).length;
+            var denomstart = string.length - fracsize;
+            var numerend = denomstart;
+            if (string.substring(numerend - 1, numerend) == '-') numerend--;
+            var numerator = string.substring(0, numerend) * 1;
+            var denominator = string.substring(denomstart, string.length) * 1;
+
+            if (baseCode === -5) {
+                divisor = has_dash ? 320 : 128;
+            }
+
+            return numerator + denominator / divisor;
+        }
+    };
+}();
+
+},{"./convert":3}],10:[function(require,module,exports){
+'use strict';
+
 module.exports = function () {
 	'use strict';
 
@@ -1011,7 +1048,7 @@ module.exports = function () {
 	};
 }();
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 module.exports = function () {
@@ -1253,7 +1290,7 @@ module.exports = function () {
 	return symbolParser;
 }();
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
 module.exports = function () {
@@ -1372,7 +1409,7 @@ module.exports = function () {
 	}
 }();
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 module.exports = function () {
@@ -1409,7 +1446,7 @@ module.exports = function () {
 	};
 }();
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -1521,7 +1558,7 @@ function isNumber(value) {
 
 module.exports = isNaN;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 var convert = require('../../lib/convert');
@@ -2002,7 +2039,7 @@ describe('When converting a dayCode to number', function () {
 	});
 });
 
-},{"../../lib/convert":3}],15:[function(require,module,exports){
+},{"../../lib/convert":3}],16:[function(require,module,exports){
 'use strict';
 
 var decimalFormatter = require('../../lib/decimalFormatter');
@@ -2181,7 +2218,7 @@ describe('when using the "decimal" formatter to format with parenthesis and no t
 	});
 });
 
-},{"../../lib/decimalFormatter":4}],16:[function(require,module,exports){
+},{"../../lib/decimalFormatter":4}],17:[function(require,module,exports){
 'use strict';
 
 var monthCodes = require('../../lib/monthCodes');
@@ -2298,7 +2335,7 @@ describe('When looking up a month number by code', function () {
 	});
 });
 
-},{"../../lib/monthCodes":6}],17:[function(require,module,exports){
+},{"../../lib/monthCodes":6}],18:[function(require,module,exports){
 'use strict';
 
 var parseMessage = require('../../lib/messageParser');
@@ -2547,7 +2584,7 @@ describe('when parsing a DDF message', function () {
 	});
 });
 
-},{"../../lib/messageParser":5}],18:[function(require,module,exports){
+},{"../../lib/messageParser":5}],19:[function(require,module,exports){
 'use strict';
 
 var PriceFormatter = require('../../lib/priceFormatter');
@@ -2998,7 +3035,7 @@ describe('When a price formatter is created', function () {
 	});
 });
 
-},{"../../lib/priceFormatter":7}],19:[function(require,module,exports){
+},{"../../lib/priceFormatter":7}],20:[function(require,module,exports){
 'use strict';
 
 var priceParser = require('../../lib/priceParser');
@@ -3131,7 +3168,26 @@ describe('when parsing prices', function () {
 	});
 });
 
-},{"../../lib/priceParser":8}],20:[function(require,module,exports){
+},{"../../lib/priceParser":8}],21:[function(require,module,exports){
+'use strict';
+
+var stringToDecimalFormatter = require('../../lib/stringToDecimalFormatter');
+
+describe('when parsing prices', function () {
+	'use strict';
+
+	describe('with a fractional separator', function () {
+		it('returns 125.625 (with unit code 2) when parsing "125-5"', function () {
+			expect(stringToDecimalFormatter('125-5', '2')).toEqual(125.625);
+		});
+
+		it('returns 125.625 (with unit code 5) when parsing "125-240"', function () {
+			expect(stringToDecimalFormatter('125-240', '5')).toEqual(125.75);
+		});
+	});
+});
+
+},{"../../lib/stringToDecimalFormatter":9}],22:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -3246,7 +3302,7 @@ describe('When an null value is formatted', function () {
 	});
 });
 
-},{"../../lib/symbolFormatter":9}],21:[function(require,module,exports){
+},{"../../lib/symbolFormatter":10}],23:[function(require,module,exports){
 'use strict';
 
 var symbolParser = require('../../lib/symbolParser');
@@ -4122,7 +4178,7 @@ describe('When checking to see if a symbol is a future option', function () {
 	});
 });
 
-},{"../../lib/symbolParser":10}],22:[function(require,module,exports){
+},{"../../lib/symbolParser":11}],24:[function(require,module,exports){
 'use strict';
 
 var timeFormatter = require('../../lib/timeFormatter');
@@ -4676,4 +4732,4 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 	});
 });
 
-},{"../../lib/timeFormatter":11}]},{},[14,15,16,17,18,19,20,21,22]);
+},{"../../lib/timeFormatter":12}]},{},[15,16,17,18,19,20,21,22,23,24]);

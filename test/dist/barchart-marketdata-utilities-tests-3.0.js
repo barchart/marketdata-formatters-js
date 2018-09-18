@@ -1285,6 +1285,20 @@ module.exports = function () {
 			}
 		},
 
+		/**
+   * Attempts to convert database format of futures options to pipeline format
+   * ZLF320Q -> ZLF9|320C
+   */
+		getFuturesOptionPipelineFormat: function getFuturesOptionPipelineFormat(symbol) {
+			var instrument = symbolParser.parseInstrumentType(symbol);
+
+			if (!instrument || instrument.type !== 'future_option') return null;
+
+			var optionType = instrument.option_type === 'call' ? 'C' : 'P';
+
+			return '' + instrument.root + instrument.month + instrument.year.toString().substr(-1, 1) + '|' + instrument.strike + optionType;
+		},
+
 		displayUsingPercent: function displayUsingPercent(symbol) {
 			return usePercentRegex.test(symbol);
 		}

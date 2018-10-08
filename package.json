@@ -40,8 +40,8 @@
     "HTML5"
   ],
   "dependencies": {
-    "lodash.isnan": "3.0.2",
-    "xmldom": "0.1.27"
+    "fast-xml-parser": "^3.12.5",
+    "lodash.isnan": "3.0.2"
   },
   "devDependencies": {
     "babel-plugin-external-helpers-2": "^6.3.13",
@@ -65,9 +65,6 @@
     "run-sequence": "~1.1.4",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
-  },
-  "browser": {
-    "./lib/common/xml/XmlDomParser.js": "./lib/common/xml/browser/XmlDomParser.js"
   },
   "browserify": {
     "transform": [

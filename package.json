@@ -40,8 +40,8 @@
     "HTML5"
   ],
   "dependencies": {
-    "fast-xml-parser": "^3.12.5",
-    "lodash.isnan": "3.0.2"
+    "lodash.isnan": "3.0.2",
+    "xmldom": "0.1.27"
   },
   "devDependencies": {
     "babel-plugin-external-helpers-2": "^6.3.13",

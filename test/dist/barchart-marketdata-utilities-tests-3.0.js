@@ -1200,44 +1200,59 @@ module.exports = function () {
 		},
 
 		getProducerSymbol: function getProducerSymbol(symbol) {
-			if (typeof symbol === 'string') {
-				var instrumentType = symbolParser.parseInstrumentType(symbol);
-
-				if (instrumentType !== null && instrumentType.type === 'future_option') {
-					var currentDate = new Date();
-					var currentYear = currentDate.getFullYear();
-					var optionType = instrumentType.option_type === 'call' ? 'C' : 'P';
-					var optionTypeTrans = String.fromCharCode(optionType.charCodeAt(0) + (instrumentType.year - currentYear));
-
-					if (instrumentType.root.length < 3) {
-						return instrumentType.root + instrumentType.month + instrumentType.strike + optionTypeTrans;
-					} else {
-						var year = instrumentType.year.toString().substr(-1);
-
-						return instrumentType.root + instrumentType.month + year + '|' + instrumentType.strike + optionType;
-					}
-				}
-
-				return symbol.replace(jerqFutureConversionRegex, '$1$2$4');
-			} else {
+			if (typeof symbol !== 'string') {
 				return null;
+			}
+
+			var instrumentType = symbolParser.parseInstrumentType(symbol);
+
+			if (instrumentType !== null && instrumentType.type === 'future') {
+				return symbol.replace(jerqFutureConversionRegex, '$1$2$4');
+			} else if (instrumentType !== null && instrumentType.type === 'future_option') {
+				var currentDate = new Date();
+				var currentYear = currentDate.getFullYear();
+				var optionType = instrumentType.option_type === 'call' ? 'C' : 'P';
+				var optionTypeTrans = String.fromCharCode(optionType.charCodeAt(0) + (instrumentType.year - currentYear));
+
+				if (instrumentType.root.length < 3) {
+					return instrumentType.root + instrumentType.month + instrumentType.strike + optionTypeTrans;
+				} else {
+					var year = instrumentType.year.toString().substr(-1);
+
+					return instrumentType.root + instrumentType.month + year + '|' + instrumentType.strike + optionType;
+				}
+			} else {
+				return symbol;
 			}
 		},
 
 		/**
    * Attempts to convert database format of futures options to pipeline format
-   * ZLF320Q -> ZLF9|320C
+   * (e.g. ZLF320Q -> ZLF9|320C)
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {String|null}
    */
 		getFuturesOptionPipelineFormat: function getFuturesOptionPipelineFormat(symbol) {
 			var instrument = symbolParser.parseInstrumentType(symbol);
 
-			if (!instrument || instrument.type !== 'future_option') return null;
+			if (instrument === null || instrument.type !== 'future_option') {
+				return null;
+			}
 
 			var optionType = instrument.option_type === 'call' ? 'C' : 'P';
 
 			return '' + instrument.root + instrument.month + instrument.year.toString().substr(-1, 1) + '|' + instrument.strike + optionType;
 		},
 
+		/**
+   * Tests to see if instrument prices should be displayed as percentages.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {boolean}
+   */
 		displayUsingPercent: function displayUsingPercent(symbol) {
 			return usePercentRegex.test(symbol);
 		}
@@ -4314,7 +4329,7 @@ describe('when using the "decimal" formatter to format with parenthesis and no t
 var monthCodes = require('../../lib/monthCodes');
 
 describe('When looking up a month name by code', function () {
-	var map;
+	var map = void 0;
 
 	beforeEach(function () {
 		map = monthCodes.getCodeToNameMap();
@@ -4370,7 +4385,7 @@ describe('When looking up a month name by code', function () {
 });
 
 describe('When looking up a month number by code', function () {
-	var map;
+	var map = void 0;
 
 	beforeEach(function () {
 		map = monthCodes.getCodeToNumberMap();
@@ -4434,7 +4449,7 @@ describe('when parsing an XML refresh message', function () {
 	'use strict';
 
 	describe('for an instrument that has settled and has a postmarket (form-T) trade', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('%<QUOTE symbol="AAPL" name="Apple Inc" exchange="NASDAQ" basecode="A" pointvalue="1.0" tickincrement="1" ddfexchange="Q" flag="s" lastupdate="20160920163525" bid="11345" bidsize="10" ask="11352" asksize="1" mode="I">\n\t\t\t\t\t<SESSION day="J" session="R" timestamp="20160920171959" open="11305" high="11412" low="11251" last="11357" previous="11358" settlement="11357" tradesize="1382944" volume="36258067" numtrades="143218" pricevolume="3548806897.06" tradetime="20160920160000" ticks=".." id="combined"/>\n\t\t\t\t\t<SESSION day="I" timestamp="20160919000000" open="11519" high="11618" low="11325" last="11358" previous="11492" settlement="11358" volume="47010000" ticks=".." id="previous"/>\n\t\t\t\t\t<SESSION day="J" session="R" previous="11358" volume="13198" id="session_J_R"/>\n\t\t\t\t\t<SESSION day="J" session="T" timestamp="20160920172007" last="11355" previous="11358" tradesize="500" volume="656171" numtrades="1118" pricevolume="74390050.90" tradetime="20160920172007" ticks="+-" id="session_J_T"/>\n\t\t\t\t\t</QUOTE>');
@@ -4466,7 +4481,7 @@ describe('when parsing an XML refresh message', function () {
 	});
 
 	describe('for an instrument that is not settled, but has a postmarket (form-T) trade', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('%<QUOTE symbol="BAC" name="Bank of America Corp" exchange="NYSE" basecode="A" pointvalue="1.0" tickincrement="1" ddfexchange="N" lastupdate="20160920152208" bid="1558" bidsize="20" ask="1559" asksize="1" mode="I">\n\t\t\t\t\t<SESSION day="J" session="R" timestamp="20160920160021" open="1574" high="1576" low="1551" last="1560" previous="1559" tradesize="1483737" volume="67399368" numtrades="96903" pricevolume="1041029293.48" tradetime="20160920160021" ticks=".." id="combined"/>\n\t\t\t\t\t<SESSION day="I" timestamp="20160919000000" open="1555" high="1578" low="1555" last="1559" previous="1549" settlement="1559" volume="66174800" ticks=".." id="previous"/>\n\t\t\t\t\t<SESSION day="J" session="R" previous="1559" volume="1772" id="session_J_R"/>\n\t\t\t\t\t<SESSION day="J" session="T" timestamp="20160920160527" last="1559" previous="1559" tradesize="1175" volume="296998" numtrades="356" pricevolume="4652652.89" tradetime="20160920160527" ticks=".." id="session_J_T"/>\n\t\t\t\t\t</QUOTE>');
@@ -4498,7 +4513,7 @@ describe('when parsing an XML refresh message', function () {
 	});
 
 	describe('for an instrument that has settled, but the form-T session is from the morning', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('%<QUOTE symbol="UDOW" name="Ultrapro DOW 30 Proshares" exchange="AMEX" basecode="A" pointvalue="1.0" tickincrement="1" ddfexchange="A" lastupdate="20170222103439" bid="10994" bidsize="16" ask="10997" asksize="8" mode="I" flag="s">\n\t\t\t\t<SESSION day="L" session="R" timestamp="20170222111751" open="10933" high="11032" low="10918" last="10993" previous="10993" tradesize="112" volume="87485" numtrades="357" pricevolume="8628142.83" tradetime="20170222111751" ticks="++" id="combined" settlement="10993"/>\n\t\t\t\t<SESSION day="K" timestamp="20170221000000" open="10921" high="11021" low="10889" last="10993" previous="10798" settlement="10993" volume="387500" ticks=".." id="previous"/>\n\t\t\t\t<SESSION day="L" session="R" previous="10993" id="session_L_R"/>\n\t\t\t\t<SESSION day="L" session="T" timestamp="20170222080456" last="10987" previous="10993" tradesize="200" volume="400" numtrades="3" pricevolume="43949.00" tradetime="20170222080456" ticks=".-" id="session_L_T"/>\n\t\t\t\t</QUOTE>');
@@ -4530,7 +4545,7 @@ describe('when parsing an XML refresh message', function () {
 	});
 
 	describe('for an instrument that has not opened and has no form-T session', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('%<QUOTE symbol="BAC" name="Bank of America Corp" exchange="NYSE" basecode="A" pointvalue="1.0" tickincrement="1" ddfexchange="N" lastupdate="20160920152208" bid="1558" bidsize="20" ask="1559" asksize="1" mode="I">\n\t\t\t\t\t<SESSION day="J" session="R" timestamp="20160920160021" open="1574" high="1576" low="1551" previous="1559" tradesize="1483737" volume="67399368" numtrades="96903" pricevolume="1041029293.48" tradetime="20160920160021" ticks=".." id="combined"/>\n\t\t\t\t\t<SESSION day="I" timestamp="20160919000000" open="1555" high="1578" low="1555" last="1559" previous="1549" settlement="1559" volume="66174800" ticks=".." id="previous"/>\n\t\t\t\t\t</QUOTE>');
@@ -4546,7 +4561,7 @@ describe('when parsing a DDF message', function () {
 	'use strict';
 
 	describe('for a 2,Z message for SIRI, 3@3.94', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('\x012SIRI,Z AQ15394,3,1I');
@@ -4578,7 +4593,7 @@ describe('when parsing a DDF message', function () {
 	});
 
 	describe('for a 2,Z message for SIRI, 2998262@3.95', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('\x012SIRI,Z AQ15395,2998262,1W');
@@ -4610,7 +4625,7 @@ describe('when parsing a DDF message', function () {
 	});
 
 	describe('for a 2,0 message for AAPL', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('\x012AAPL,0\x02AQ1510885,D0M \x03\x14PHWQT@\x04$');
@@ -4638,7 +4653,7 @@ describe('when parsing a DDF message', function () {
 	});
 
 	describe('for a 2,Z message for TSLA', function () {
-		var x;
+		var x = void 0;
 
 		beforeEach(function () {
 			x = parseMessage('\x012TSLA,Z\x02AQ1521201,3,TI\x03');
@@ -4680,7 +4695,7 @@ describe('when parsing a DDF message', function () {
 var PriceFormatter = require('../../lib/priceFormatter');
 
 describe('When a price formatter is created', function () {
-	var priceFormatter;
+	var priceFormatter = void 0;
 
 	describe('with a decimal separator', function () {
 		beforeEach(function () {
@@ -5285,8 +5300,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 var symbolFormatter = require('../../lib/symbolFormatter');
 
 describe('When a lowercase string is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = 'aapl');
@@ -5298,8 +5313,8 @@ describe('When a lowercase string is formatted as a symbol', function () {
 });
 
 describe('When an uppercase string is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = 'AAPL');
@@ -5311,8 +5326,8 @@ describe('When an uppercase string is formatted as a symbol', function () {
 });
 
 describe('When a mixed case string is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = 'aApL');
@@ -5324,8 +5339,8 @@ describe('When a mixed case string is formatted as a symbol', function () {
 });
 
 describe('When a zero-length string is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = '');
@@ -5337,8 +5352,8 @@ describe('When a zero-length string is formatted as a symbol', function () {
 });
 
 describe('When a string with numbers is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = 'esm16');
@@ -5350,8 +5365,8 @@ describe('When a string with numbers is formatted as a symbol', function () {
 });
 
 describe('When a number is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = 1);
@@ -5367,8 +5382,8 @@ describe('When a number is formatted as a symbol', function () {
 });
 
 describe('When an undefined value is formatted as a symbol', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = undefined);
@@ -5380,8 +5395,8 @@ describe('When an undefined value is formatted as a symbol', function () {
 });
 
 describe('When an null value is formatted', function () {
-	var originalSymbol;
-	var formattedSymbol;
+	var originalSymbol = void 0;
+	var formattedSymbol = void 0;
 
 	beforeEach(function () {
 		formattedSymbol = symbolFormatter.format(originalSymbol = null);
@@ -5399,7 +5414,7 @@ var symbolParser = require('../../lib/symbolParser');
 
 describe('When parsing a symbol for instrument type', function () {
 	describe('and the symbol is IBM', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('IBM');
@@ -5411,7 +5426,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ESZ9', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ESZ9');
@@ -5447,7 +5462,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ESZ16', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ESZ16');
@@ -5483,7 +5498,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ESZ2016', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ESZ2016');
@@ -5519,7 +5534,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ES*0', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ES*0');
@@ -5551,7 +5566,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ES*1', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ES*1');
@@ -5583,7 +5598,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is CLF0', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('CLF0');
@@ -5595,7 +5610,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is CLF1 and the year is 2019', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			var getFullYear = Date.prototype.getFullYear;
@@ -5615,7 +5630,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is CLF9 and the year is 2019', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			var getFullYear = Date.prototype.getFullYear;
@@ -5635,7 +5650,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ^EURUSD', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('^EURUSD');
@@ -5655,7 +5670,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is $DOWI', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('$DOWI');
@@ -5675,7 +5690,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is $SG1E', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('$SG1E');
@@ -5695,7 +5710,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is -001A', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('-001A');
@@ -5715,7 +5730,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ESZ2660Q', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ESZ2660Q');
@@ -5755,7 +5770,7 @@ describe('When parsing a symbol for instrument type', function () {
 	});
 
 	describe('and the symbol is ZWH8|470C', function () {
-		var instrumentType;
+		var instrumentType = void 0;
 
 		beforeEach(function () {
 			instrumentType = symbolParser.parseInstrumentType('ZWH8|470C');
@@ -5862,6 +5877,14 @@ describe('When checking to see if a symbol is a future', function () {
 
 	it('the symbol "ZWK18465C" should return false', function () {
 		expect(symbolParser.getIsFuture('ZWK18465C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
 	});
 });
 
@@ -5977,6 +6000,14 @@ describe('When checking to see if a symbol is sector', function () {
 	it('the symbol "ZWK18465C" should return false', function () {
 		expect(symbolParser.getIsSector('ZWK18465C')).toEqual(false);
 	});
+
+	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+	});
 });
 
 describe('When checking to see if a symbol is forex', function () {
@@ -6045,6 +6076,14 @@ describe('When checking to see if a symbol is forex', function () {
 
 	it('the symbol "ZWK18465C" should return false', function () {
 		expect(symbolParser.getIsForex('ZWK18465C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
 	});
 });
 
@@ -6115,6 +6154,92 @@ describe('When checking to see if a symbol is a future spread', function () {
 
 	it('the symbol "ZWK18465C" should return false', function () {
 		expect(symbolParser.getIsFutureSpread('ZWK18465C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+	});
+});
+
+describe('When checking to see if a symbol is a future option', function () {
+	it('the symbol "ESZ6" should return false', function () {
+		expect(symbolParser.getIsFutureOption('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function () {
+		expect(symbolParser.getIsFutureOption('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function () {
+		expect(symbolParser.getIsFutureOption('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ESZ016" should return false', function () {
+		expect(symbolParser.getIsFutureOption('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return false', function () {
+		expect(symbolParser.getIsFutureOption('O!H7')).toEqual(false);
+	});
+
+	it('the symbol "O!H17" should return false', function () {
+		expect(symbolParser.getIsFutureOption('O!H17')).toEqual(false);
+	});
+
+	it('the symbol "O!H2017" should return false', function () {
+		expect(symbolParser.getIsFutureOption('O!H2017')).toEqual(false);
+	});
+
+	it('the symbol "IBM" should return false', function () {
+		expect(symbolParser.getIsFutureOption('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return false', function () {
+		expect(symbolParser.getIsFutureOption('^EURUSD')).toEqual(false);
+	});
+
+	it('the symbol "-001A" should return false', function () {
+		expect(symbolParser.getIsFutureOption('-001A')).toEqual(false);
+	});
+
+	it('the symbol "$DOWI" should return false', function () {
+		expect(symbolParser.getIsFutureOption('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "$S1GE" should return false', function () {
+		expect(symbolParser.getIsFutureOption('$S1GE')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function () {
+		expect(symbolParser.getIsFutureOption('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2660Q" should return true', function () {
+		expect(symbolParser.getIsFutureOption('ESZ2660Q')).toEqual(true);
+	});
+
+	it('the symbol "ZWH8|470C" should return true', function () {
+		expect(symbolParser.getIsFutureOption('ZWH8|470C')).toEqual(true);
+	});
+
+	it('the symbol "BB1F8|12050C" should return true', function () {
+		expect(symbolParser.getIsFutureOption('BB1F8|12050C')).toEqual(true);
+	});
+
+	it('the symbol "ZWK18465C" should return true', function () {
+		expect(symbolParser.getIsFutureOption('ZWK18465C')).toEqual(true);
+	});
+
+	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00" should return false', function () {
+		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
 	});
 });
 
@@ -6196,75 +6321,9 @@ describe('When getting a producer symbol', function () {
 	it('BZ6N20|25P should map to BZ6N20|25P', function () {
 		expect(symbolParser.getProducerSymbol('BZ6N20|25P')).toEqual('BZ6N0|25P');
 	});
-});
 
-describe('When checking to see if a symbol is a future option', function () {
-	it('the symbol "ESZ6" should return false', function () {
-		expect(symbolParser.getIsFutureOption('ESZ6')).toEqual(false);
-	});
-
-	it('the symbol "ESZ16" should return false', function () {
-		expect(symbolParser.getIsFutureOption('ESZ16')).toEqual(false);
-	});
-
-	it('the symbol "ESZ2016" should return false', function () {
-		expect(symbolParser.getIsFutureOption('ESZ2016')).toEqual(false);
-	});
-
-	it('the symbol "ESZ016" should return false', function () {
-		expect(symbolParser.getIsFutureOption('ESZ016')).toEqual(false);
-	});
-
-	it('the symbol "O!H7" should return false', function () {
-		expect(symbolParser.getIsFutureOption('O!H7')).toEqual(false);
-	});
-
-	it('the symbol "O!H17" should return false', function () {
-		expect(symbolParser.getIsFutureOption('O!H17')).toEqual(false);
-	});
-
-	it('the symbol "O!H2017" should return false', function () {
-		expect(symbolParser.getIsFutureOption('O!H2017')).toEqual(false);
-	});
-
-	it('the symbol "IBM" should return false', function () {
-		expect(symbolParser.getIsFutureOption('IBM')).toEqual(false);
-	});
-
-	it('the symbol "^EURUSD" should return false', function () {
-		expect(symbolParser.getIsFutureOption('^EURUSD')).toEqual(false);
-	});
-
-	it('the symbol "-001A" should return false', function () {
-		expect(symbolParser.getIsFutureOption('-001A')).toEqual(false);
-	});
-
-	it('the symbol "$DOWI" should return false', function () {
-		expect(symbolParser.getIsFutureOption('$DOWI')).toEqual(false);
-	});
-
-	it('the symbol "$S1GE" should return false', function () {
-		expect(symbolParser.getIsFutureOption('$S1GE')).toEqual(false);
-	});
-
-	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function () {
-		expect(symbolParser.getIsFutureOption('_S_SP_ZCH7_ZCK7')).toEqual(false);
-	});
-
-	it('the symbol "ESZ2660Q" should return true', function () {
-		expect(symbolParser.getIsFutureOption('ESZ2660Q')).toEqual(true);
-	});
-
-	it('the symbol "ZWH8|470C" should return true', function () {
-		expect(symbolParser.getIsFutureOption('ZWH8|470C')).toEqual(true);
-	});
-
-	it('the symbol "BB1F8|12050C" should return true', function () {
-		expect(symbolParser.getIsFutureOption('BB1F8|12050C')).toEqual(true);
-	});
-
-	it('the symbol "ZWK18465C" should return true', function () {
-		expect(symbolParser.getIsFutureOption('ZWK18465C')).toEqual(true);
+	it('PLATTS:AAVSV00 should map to PLATTS:AAVSV00', function () {
+		expect(symbolParser.getProducerSymbol('PLATTS:AAVSV00')).toEqual('PLATTS:AAVSV00');
 	});
 });
 
@@ -6274,14 +6333,14 @@ describe('When checking to see if a symbol is a future option', function () {
 var timeFormatter = require('../../lib/timeFormatter');
 
 describe('When a time formatter is created (without specifying the clock)', function () {
-	var tf;
+	var tf = void 0;
 
 	beforeEach(function () {
 		tf = timeFormatter();
 	});
 
 	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6342,7 +6401,7 @@ describe('When a time formatter is created (without specifying the clock)', func
 	});
 
 	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6373,7 +6432,7 @@ describe('When a time formatter is created (without specifying the clock)', func
 	});
 
 	describe('and a quote is formatted (with with no "flag" and a "lastPrice" value and a "sessionT" indicator)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6405,14 +6464,14 @@ describe('When a time formatter is created (without specifying the clock)', func
 });
 
 describe('When a time formatter is created (and a 24-hour clock is specified)', function () {
-	var tf;
+	var tf = void 0;
 
 	beforeEach(function () {
 		tf = timeFormatter(false);
 	});
 
 	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6473,7 +6532,7 @@ describe('When a time formatter is created (and a 24-hour clock is specified)', 
 	});
 
 	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6505,14 +6564,14 @@ describe('When a time formatter is created (and a 24-hour clock is specified)', 
 });
 
 describe('When a time formatter is created (and a "short" 24-hour clock is specified)', function () {
-	var tf;
+	var tf = void 0;
 
 	beforeEach(function () {
 		tf = timeFormatter(false, true);
 	});
 
 	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6573,7 +6632,7 @@ describe('When a time formatter is created (and a "short" 24-hour clock is speci
 	});
 
 	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6605,14 +6664,14 @@ describe('When a time formatter is created (and a "short" 24-hour clock is speci
 });
 
 describe('When a time formatter is created (and a 12-hour clock is specified)', function () {
-	var tf;
+	var tf = void 0;
 
 	beforeEach(function () {
 		tf = timeFormatter(true);
 	});
 
 	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6682,7 +6741,7 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 	});
 
 	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6714,14 +6773,14 @@ describe('When a time formatter is created (and a 12-hour clock is specified)', 
 });
 
 describe('When a time formatter is created (and a "short" 12-hour clock is specified)', function () {
-	var tf;
+	var tf = void 0;
 
 	beforeEach(function () {
 		tf = timeFormatter(true, true);
 	});
 
 	describe('and a quote is formatted (with no "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {
@@ -6791,7 +6850,7 @@ describe('When a time formatter is created (and a "short" 12-hour clock is speci
 	});
 
 	describe('and a quote is formatted (with with a "flag" and a "lastPrice" value)', function () {
-		var quote;
+		var quote = void 0;
 
 		beforeEach(function () {
 			quote = {

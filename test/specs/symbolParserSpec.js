@@ -353,19 +353,19 @@ describe('When parsing a symbol for instrument type', () => {
 		});
 	});
 
-	describe('and the symbol is ZWH8|470C', () => {
+	describe('and the symbol is ZWH9|470C', () => {
 		let instrumentType;
 
 		beforeEach(() => {
-			instrumentType = symbolParser.parseInstrumentType('ZWH8|470C');
+			instrumentType = symbolParser.parseInstrumentType('ZWH9|470C');
 		});
 
 		it('the result should not be null', () => {
 			expect(instrumentType).not.toBe(null);
 		});
 
-		it('the "symbol" should be "ZWH8|470C"', () => {
-			expect(instrumentType.symbol).toEqual('ZWH8|470C');
+		it('the "symbol" should be "ZWH9|470C"', () => {
+			expect(instrumentType.symbol).toEqual('ZWH9|470C');
 		});
 
 		it('the "type" should be "future_option"', () => {
@@ -380,8 +380,8 @@ describe('When parsing a symbol for instrument type', () => {
 			expect(instrumentType.month).toEqual('H');
 		});
 
-		it('the "year" should be 2018', () => {
-			expect(instrumentType.year).toEqual(2018);
+		it('the "year" should be 2019', () => {
+			expect(instrumentType.year).toEqual(2019);
 		});
 
 		it('the "strike" should be 470', () => {
@@ -451,8 +451,8 @@ describe('When checking to see if a symbol is a future', () => {
 		expect(symbolParser.getIsFuture('ESZ2660Q')).toEqual(false);
 	});
 
-	it('the symbol "ZWH8|470C" should return false', () => {
-		expect(symbolParser.getIsFuture('ZWH8|470C')).toEqual(false);
+	it('the symbol "ZWH9|470C" should return false', () => {
+		expect(symbolParser.getIsFuture('ZWH9|470C')).toEqual(false);
 	});
 
 	it('the symbol "BB1F8|12050C" should return false', () => {
@@ -573,8 +573,8 @@ describe('When checking to see if a symbol is sector', () => {
 		expect(symbolParser.getIsSector('ESZ2660Q')).toEqual(false);
 	});
 
-	it('the symbol "ZWH8|470C" should return false', () => {
-		expect(symbolParser.getIsSector('ZWH8|470C')).toEqual(false);
+	it('the symbol "ZWH9|470C" should return false', () => {
+		expect(symbolParser.getIsSector('ZWH9|470C')).toEqual(false);
 	});
 
 	it('the symbol "BB1F8|12050C" should return false', () => {
@@ -650,8 +650,8 @@ describe('When checking to see if a symbol is forex', () => {
 		expect(symbolParser.getIsForex('ESZ2660Q')).toEqual(false);
 	});
 
-	it('the symbol "ZWH8|470C" should return false', () => {
-		expect(symbolParser.getIsForex('ZWH8|470C')).toEqual(false);
+	it('the symbol "ZWH9|470C" should return false', () => {
+		expect(symbolParser.getIsForex('ZWH9|470C')).toEqual(false);
 	});
 
 	it('the symbol "BB1F8|12050C" should return false', () => {
@@ -728,8 +728,8 @@ describe('When checking to see if a symbol is a future spread', () => {
 		expect(symbolParser.getIsFutureSpread('ESZ2660Q')).toEqual(false);
 	});
 
-	it('the symbol "ZWH8|470C" should return false', () => {
-		expect(symbolParser.getIsFutureSpread('ZWH8|470C')).toEqual(false);
+	it('the symbol "ZWH9|470C" should return false', () => {
+		expect(symbolParser.getIsFutureSpread('ZWH9|470C')).toEqual(false);
 	});
 
 	it('the symbol "BB1F8|12050C" should return false', () => {
@@ -806,8 +806,8 @@ describe('When checking to see if a symbol is a future option', () => {
 		expect(symbolParser.getIsFutureOption('ESZ2660Q')).toEqual(true);
 	});
 
-	it('the symbol "ZWH8|470C" should return true', () => {
-		expect(symbolParser.getIsFutureOption('ZWH8|470C')).toEqual(true);
+	it('the symbol "ZWH9|470C" should return true', () => {
+		expect(symbolParser.getIsFutureOption('ZWH9|470C')).toEqual(true);
 	});
 
 	it('the symbol "BB1F8|12050C" should return true', () => {

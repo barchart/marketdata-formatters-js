@@ -939,38 +939,37 @@ module.exports = function () {
 var Converter = require('./convert');
 
 module.exports = function () {
+	/**
+  * Adapted from legacy code: https://github.com/barchart/php-jscharts/blob/372deb9b4d9ee678f32b6f8c4268434249c1b4ac/chart_package/webroot/js/deps/ddfplus/com.ddfplus.js
+  */
+	return function (string, unitCode) {
+		var baseCode = Converter.unitCodeToBaseCode(unitCode);
 
-    /**
-     * Adapted from legacy code: https://github.com/barchart/php-jscharts/blob/372deb9b4d9ee678f32b6f8c4268434249c1b4ac/chart_package/webroot/js/deps/ddfplus/com.ddfplus.js
-     */
-    return function (string, unitCode) {
-        var baseCode = Converter.unitCodeToBaseCode(unitCode);
+		// Fix for 10-Yr T-Notes
+		if (baseCode === -4 && (string.length === 7 || string.length === 6 && string.charAt(0) !== '1')) {
+			baseCode -= 1;
+		}
 
-        // Fix for 10-Yr T-Notes
-        if (baseCode === -4 && (string.length === 7 || string.length === 6 && string.charAt(0) !== '1')) {
-            baseCode -= 1;
-        }
+		if (baseCode >= 0) {
+			var ival = string * 1;
+			return Math.round(ival * Math.pow(10, baseCode)) / Math.pow(10, baseCode);
+		} else {
+			var has_dash = string.match(/-/);
+			var divisor = Math.pow(2, Math.abs(baseCode) + 2);
+			var fracsize = String(divisor).length;
+			var denomstart = string.length - fracsize;
+			var numerend = denomstart;
+			if (string.substring(numerend - 1, numerend) == '-') numerend--;
+			var numerator = string.substring(0, numerend) * 1;
+			var denominator = string.substring(denomstart, string.length) * 1;
 
-        if (baseCode >= 0) {
-            var ival = string * 1;
-            return Math.round(ival * Math.pow(10, baseCode)) / Math.pow(10, baseCode);
-        } else {
-            var has_dash = string.match(/-/);
-            var divisor = Math.pow(2, Math.abs(baseCode) + 2);
-            var fracsize = String(divisor).length;
-            var denomstart = string.length - fracsize;
-            var numerend = denomstart;
-            if (string.substring(numerend - 1, numerend) == '-') numerend--;
-            var numerator = string.substring(0, numerend) * 1;
-            var denominator = string.substring(denomstart, string.length) * 1;
+			if (baseCode === -5) {
+				divisor = has_dash ? 320 : 128;
+			}
 
-            if (baseCode === -5) {
-                divisor = has_dash ? 320 : 128;
-            }
-
-            return numerator + denominator / divisor;
-        }
-    };
+			return numerator + denominator / divisor;
+		}
+	};
 }();
 
 },{"./convert":2}],9:[function(require,module,exports){
@@ -996,33 +995,248 @@ module.exports = function () {
 module.exports = function () {
 	'use strict';
 
-	var exchangeRegex = /^(.*)\\.([A-Z]{1,4})$/i,
-	    jerqFutureConversionRegex = /(.{1,3})([A-Z]{1})([0-9]{3}|[0-9]{1})?([0-9]{1})$/i,
-	    concreteFutureRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z]{1})([0-9]{4}|[0-9]{1,2})$/i,
-	    referenceFutureRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})(\*{1})([0-9]{1})$/i,
-	    futureSpreadRegex = /^_S_/i,
-	    shortFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]?)([A-Z])([0-9]{1,4})([A-Z])$/i,
-	    longFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{1,4})\|(\-?[0-9]{1,5})(C|P)$/i,
-	    historicalFutureOptionRegex = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{2})([0-9]{1,5})(C|P)$/i,
-	    forexRegex = /^\^([A-Z]{3})([A-Z]{3})$/i,
-	    sectorRegex = /^\-(.*)$/i,
-	    indexRegex = /^\$(.*)$/i,
-	    batsRegex = /^(.*)\.BZ$/i,
-	    usePercentRegex = /(\.RT)$/;
-
-	var altMonthCodes = {
-		A: 'F', B: 'G', C: 'H', D: 'J', E: 'K', I: 'M', L: 'N', O: 'Q', P: 'U', R: 'V', S: 'X', T: 'Z'
+	var alternateFuturesMonths = {
+		A: 'F',
+		B: 'G',
+		C: 'H',
+		D: 'J',
+		E: 'K',
+		I: 'M',
+		L: 'N',
+		O: 'Q',
+		P: 'U',
+		R: 'V',
+		S: 'X',
+		T: 'Z'
 	};
 
-	function getIsType(symbol, type) {
-		var instrumentType = symbolParser.parseInstrumentType(symbol);
+	var predicates = {};
 
-		return instrumentType !== null && instrumentType.type === type;
+	predicates.bats = /^(.*)\.BZ$/i;
+	predicates.percent = /(\.RT)$/;
+
+	var types = {};
+
+	types.forex = /^\^([A-Z]{3})([A-Z]{3})$/i;
+	types.futures = {};
+	types.futures.spread = /^_S_/i;
+	types.futures.concrete = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z]{1})([0-9]{4}|[0-9]{1,2})$/i;
+	types.futures.alias = /^([A-Z][A-Z0-9\$\-!\.]{0,2})(\*{1})([0-9]{1})$/i;
+	types.futures.options = {};
+	types.futures.options.short = /^([A-Z][A-Z0-9\$\-!\.]?)([A-Z])([0-9]{1,4})([A-Z])$/i;
+	types.futures.options.long = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{1,4})\|(\-?[0-9]{1,5})(C|P)$/i;
+	types.futures.options.historical = /^([A-Z][A-Z0-9\$\-!\.]{0,2})([A-Z])([0-9]{2})([0-9]{1,5})(C|P)$/i;
+	types.indicies = {};
+	types.indicies.external = /^\$(.*)$/i;
+	types.indicies.sector = /^\-(.*)$/i;
+	types.indicies.cmdty = /^(.*)\.CM$/i;
+
+	var parsers = [];
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		if (types.futures.spread.test(symbol)) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'future_spread';
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		var match = symbol.match(types.futures.concrete);
+
+		if (match !== null) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'future';
+
+			definition.dynamic = false;
+			definition.root = match[1];
+			definition.month = match[2];
+			definition.year = getFuturesYear(match[3]);
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		var match = symbol.match(types.futures.alias);
+
+		if (match !== null) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'future';
+
+			definition.dynamic = true;
+			definition.root = match[1];
+			definition.dynamicCode = match[3];
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		if (types.forex.test(symbol)) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'forex';
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		if (types.indicies.external.test(symbol)) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'index';
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		if (types.indicies.sector.test(symbol)) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'sector';
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		var match = symbol.match(types.futures.options.short);
+
+		if (match !== null) {
+			definition = {};
+
+			var putCallCharacterCode = match[4].charCodeAt(0);
+			var putCharacterCode = 80;
+			var callCharacterCode = 67;
+
+			var optionType = void 0;
+			var optionYearDelta = void 0;
+
+			if (putCallCharacterCode < putCharacterCode) {
+				optionType = 'call';
+				optionYearDelta = putCallCharacterCode - callCharacterCode;
+			} else {
+				optionType = 'put';
+				optionYearDelta = putCallCharacterCode - putCharacterCode;
+			}
+
+			definition.symbol = symbol;
+			definition.type = 'future_option';
+
+			definition.option_type = optionType;
+			definition.strike = parseInt(match[3]);
+
+			definition.root = match[1];
+			definition.month = match[2];
+			definition.year = getCurrentYear() + optionYearDelta;
+		}
+
+		return definition;
+	});
+
+	parsers.push(function (symbol) {
+		var definition = null;
+
+		var match = symbol.match(types.futures.options.long) || symbol.match(types.futures.options.historical);
+
+		if (match !== null) {
+			definition = {};
+
+			definition.symbol = symbol;
+			definition.type = 'future_option';
+
+			definition.option_type = match[5] === 'C' ? 'call' : 'put';
+			definition.strike = parseInt(match[4]);
+
+			definition.root = match[1];
+			definition.month = getFuturesMonth(match[2]);
+			definition.year = getFuturesYear(match[3]);
+		}
+
+		return definition;
+	});
+
+	var converters = [];
+
+	converters.push(function (symbol) {
+		var converted = null;
+
+		if (symbolParser.getIsFuture(symbol) && symbolParser.getIsConcrete(symbol)) {
+			converted = symbol.replace(/(.{1,3})([A-Z]{1})([0-9]{3}|[0-9]{1})?([0-9]{1})$/i, '$1$2$4') || null;
+		}
+
+		return converted;
+	});
+
+	converters.push(function (symbol) {
+		var converted = null;
+
+		if (symbolParser.getIsFutureOption(symbol)) {
+			var definition = symbolParser.parseInstrumentType(symbol);
+
+			var putCallCharacter = getPutCallCharacter(definition.option_type);
+
+			if (definition.root.length < 3) {
+				var putCallCharacterCode = putCallCharacter.charCodeAt(0);
+
+				converted = '' + definition.root + definition.month + definition.strike + String.fromCharCode(putCallCharacterCode + definition.year - getCurrentYear());
+			} else {
+				converted = '' + definition.root + definition.month + getYearDigits(definition.year, 1) + '|' + definition.strike + putCallCharacter;
+			}
+		}
+
+		return converted;
+	});
+
+	converters.push(function (symbol) {
+		return symbol;
+	});
+
+	function getCurrentYear() {
+		var now = new Date();
+
+		return now.getFullYear();
+	}
+
+	function getYearDigits(year, digits) {
+		var yearString = year.toString();
+
+		return yearString.substring(yearString.length - digits, yearString.length);
+	}
+
+	function getFuturesMonth(monthString) {
+		return alternateFuturesMonths[monthString] || monthString;
 	}
 
 	function getFuturesYear(yearString) {
-		var currentDate = new Date();
-		var currentYear = currentDate.getFullYear();
+		var currentYear = getCurrentYear();
 
 		var year = parseInt(yearString);
 
@@ -1045,185 +1259,63 @@ module.exports = function () {
 		return year;
 	}
 
+	function getPutCallCharacter(optionType) {
+		if (optionType === 'call') {
+			return 'C';
+		} else if (optionType === 'put') {
+			return 'P';
+		} else {
+			return null;
+		}
+	}
+
 	var symbolParser = {
+		/**
+   * Returns a simple instrument definition with the terms that can be
+   * gleaned from a symbol. If no specifics can be determined from the
+   * symbol, a null value is returned.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Object|null}
+   */
 		parseInstrumentType: function parseInstrumentType(symbol) {
 			if (typeof symbol !== 'string') {
 				return null;
 			}
 
-			var exchangeMatch = symbol.match(exchangeRegex);
+			var definition = null;
 
-			if (exchangeMatch !== null) {
-				symbol = exchangeMatch[1];
+			for (var i = 0; i < parsers.length && definition === null; i++) {
+				var parser = parsers[i];
+
+				definition = parser(symbol);
 			}
 
-			if (futureSpreadRegex.test(symbol)) {
-				return {
-					symbol: symbol,
-					type: 'future_spread'
-				};
-			}
-
-			var staticFutureMatch = symbol.match(concreteFutureRegex);
-
-			if (staticFutureMatch !== null) {
-				return {
-					symbol: symbol,
-					type: 'future',
-					root: staticFutureMatch[1],
-					dynamic: false,
-					month: staticFutureMatch[2],
-					year: getFuturesYear(staticFutureMatch[3])
-				};
-			}
-
-			var dynamicFutureMatch = symbol.match(referenceFutureRegex);
-
-			if (dynamicFutureMatch !== null) {
-				return {
-					symbol: symbol,
-					type: 'future',
-					root: dynamicFutureMatch[1],
-					dynamic: true,
-					dynamicCode: dynamicFutureMatch[3]
-				};
-			}
-
-			var forexMatch = symbol.match(forexRegex);
-
-			if (forexMatch !== null) {
-				return {
-					symbol: symbol,
-					type: 'forex'
-				};
-			}
-
-			var indexMatch = symbol.match(indexRegex);
-
-			if (indexMatch !== null) {
-				return {
-					symbol: symbol,
-					type: 'index'
-				};
-			}
-
-			var sectorMatch = symbol.match(sectorRegex);
-
-			if (sectorMatch !== null) {
-				return {
-					symbol: symbol,
-					type: 'sector'
-				};
-			}
-
-			var shortFutureOptionMatch = symbol.match(shortFutureOptionRegex);
-
-			if (shortFutureOptionMatch !== null) {
-				var currentDate = new Date();
-				var currentYear = currentDate.getFullYear();
-				var optionType = void 0,
-				    optionYear = void 0;
-
-				if (shortFutureOptionMatch[4] >= 'P') {
-					optionYear = currentYear + (shortFutureOptionMatch[4].charCodeAt(0) - 'P'.charCodeAt(0));
-					optionType = 'put';
-				} else {
-					optionYear = currentYear + (shortFutureOptionMatch[4].charCodeAt(0) - 'C'.charCodeAt(0));
-					optionType = 'call';
-				}
-
-				return {
-					symbol: symbol,
-					type: 'future_option',
-					root: shortFutureOptionMatch[1],
-					month: shortFutureOptionMatch[2],
-					year: optionYear,
-					strike: parseInt(shortFutureOptionMatch[3]),
-					option_type: optionType
-				};
-			}
-
-			var longFutureOptionMatch = symbol.match(longFutureOptionRegex);
-			var futureOptionMatch = longFutureOptionMatch !== null ? longFutureOptionMatch : symbol.match(historicalFutureOptionRegex);
-
-			if (futureOptionMatch !== null) {
-				var month = futureOptionMatch[2];
-
-				return {
-					symbol: symbol,
-					type: 'future_option',
-					root: futureOptionMatch[1],
-					month: altMonthCodes.hasOwnProperty(month) ? altMonthCodes[month] : month,
-					year: getFuturesYear(futureOptionMatch[3]),
-					strike: parseInt(futureOptionMatch[4]),
-					option_type: futureOptionMatch[5] === 'C' ? 'call' : 'put'
-				};
-			}
-
-			return null;
+			return definition;
 		},
 
-		getIsConcrete: function getIsConcrete(symbol) {
-			return !symbolParser.getIsReference(symbol);
-		},
-
-		getIsReference: function getIsReference(symbol) {
-			return referenceFutureRegex.test(symbol);
-		},
-
-		getIsFuture: function getIsFuture(symbol) {
-			return getIsType(symbol, 'future');
-		},
-
-		getIsFutureSpread: function getIsFutureSpread(symbol) {
-			return getIsType(symbol, 'future_spread');
-		},
-
-		getIsFutureOption: function getIsFutureOption(symbol) {
-			return getIsType(symbol, 'future_option');
-		},
-
-		getIsForex: function getIsForex(symbol) {
-			return getIsType(symbol, 'forex');
-		},
-
-		getIsSector: function getIsSector(symbol) {
-			return getIsType(symbol, 'sector');
-		},
-
-		getIsIndex: function getIsIndex(symbol) {
-			return getIsType(symbol, 'index');
-		},
-
-		getIsBats: function getIsBats(symbol) {
-			return batsRegex.test(symbol);
-		},
-
+		/**
+   * Translates a symbol into a form suitable for use with JERQ (i.e. our quote "producer").
+   *
+   * @public
+   * @param {String} symbol
+   * @return {String|null}
+   */
 		getProducerSymbol: function getProducerSymbol(symbol) {
 			if (typeof symbol !== 'string') {
 				return null;
 			}
 
-			var instrumentType = symbolParser.parseInstrumentType(symbol);
+			var converted = null;
 
-			if (instrumentType !== null && instrumentType.type === 'future') {
-				return symbol.replace(jerqFutureConversionRegex, '$1$2$4');
-			} else if (instrumentType !== null && instrumentType.type === 'future_option') {
-				var currentDate = new Date();
-				var currentYear = currentDate.getFullYear();
-				var optionType = instrumentType.option_type === 'call' ? 'C' : 'P';
-				var optionTypeTrans = String.fromCharCode(optionType.charCodeAt(0) + (instrumentType.year - currentYear));
+			for (var i = 0; i < converters.length && converted === null; i++) {
+				var converter = converters[i];
 
-				if (instrumentType.root.length < 3) {
-					return instrumentType.root + instrumentType.month + instrumentType.strike + optionTypeTrans;
-				} else {
-					var year = instrumentType.year.toString().substr(-1);
-
-					return instrumentType.root + instrumentType.month + year + '|' + instrumentType.strike + optionType;
-				}
-			} else {
-				return symbol;
+				converted = converter(symbol);
 			}
+
+			return converted;
 		},
 
 		/**
@@ -1235,26 +1327,145 @@ module.exports = function () {
    * @returns {String|null}
    */
 		getFuturesOptionPipelineFormat: function getFuturesOptionPipelineFormat(symbol) {
-			var instrument = symbolParser.parseInstrumentType(symbol);
+			var definition = symbolParser.parseInstrumentType(symbol);
 
-			if (instrument === null || instrument.type !== 'future_option') {
-				return null;
+			var formatted = null;
+
+			if (definition.type === 'future_option') {
+				var putCallCharacter = getPutCallCharacter(definition.option_type);
+
+				formatted = '' + definition.root + definition.month + getYearDigits(definition.year, 1) + '|' + definition.strike + putCallCharacter;
 			}
 
-			var optionType = instrument.option_type === 'call' ? 'C' : 'P';
-
-			return '' + instrument.root + instrument.month + instrument.year.toString().substr(-1, 1) + '|' + instrument.strike + optionType;
+			return formatted;
 		},
 
 		/**
-   * Tests to see if instrument prices should be displayed as percentages.
+   * Returns true if the symbol is not an alias to another symbol; otherwise
+   * false.
    *
    * @public
    * @param {String} symbol
-   * @returns {boolean}
+   * @returns {Boolean}
+   */
+		getIsConcrete: function getIsConcrete(symbol) {
+			return typeof symbol === 'string' && !types.futures.alias.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol is an alias for another symbol; otherwise false.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsReference: function getIsReference(symbol) {
+			return typeof symbol === 'string' && types.futures.alias.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol represents futures contract; false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsFuture: function getIsFuture(symbol) {
+			return typeof symbol === 'string' && (types.futures.concrete.test(symbol) || types.futures.alias.test(symbol));
+		},
+
+		/**
+   * Returns true if the symbol represents futures spread; false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsFutureSpread: function getIsFutureSpread(symbol) {
+			return typeof symbol === 'string' && types.futures.spread.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol represents an option on a futures contract; false
+   * otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsFutureOption: function getIsFutureOption(symbol) {
+			return typeof symbol === 'string' && (types.futures.options.short.test(symbol) || types.futures.options.long.test(symbol) || types.futures.options.historical.test(symbol));
+		},
+
+		/**
+   * Returns true if the symbol represents a foreign exchange currency pair;
+   * false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsForex: function getIsForex(symbol) {
+			return typeof symbol === 'string' && types.forex.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol represents an external index (e.g. Dow Jones
+   * Industrials); false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsIndex: function getIsIndex(symbol) {
+			return typeof symbol === 'string' && types.indicies.external.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol represents an internally-calculated sector
+   * index; false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsSector: function getIsSector(symbol) {
+			return typeof symbol === 'string' && types.indicies.sector.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol represents an internally-calculated, cmdty-branded
+   * index; false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsCmdty: function getIsCmdty(symbol) {
+			return typeof symbol === 'string' && types.indicies.cmdty.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol is listed on the BATS exchange; false otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsBats: function getIsBats(symbol) {
+			return typeof symbol === 'string' && predicates.bats.test(symbol);
+		},
+
+		/**
+   * Returns true if prices for the symbol should be represented as a percentage; false
+   * otherwise.
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
    */
 		displayUsingPercent: function displayUsingPercent(symbol) {
-			return usePercentRegex.test(symbol);
+			return typeof symbol === 'string' && predicates.percent.test(symbol);
 		}
 	};
 
@@ -5276,18 +5487,18 @@ describe('when parsing prices', function () {
 },{"../../lib/priceParser":7}],23:[function(require,module,exports){
 'use strict';
 
-var stringToDecimalFormatter = require('../../lib/stringToDecimalFormatter');
+var stringToDecimalFormatterSpec = require('../../lib/stringToDecimalFormatter');
 
 describe('when parsing prices', function () {
 	'use strict';
 
 	describe('with a fractional separator', function () {
 		it('returns 125.625 (with unit code 2) when parsing "125-5"', function () {
-			expect(stringToDecimalFormatter('125-5', '2')).toEqual(125.625);
+			expect(stringToDecimalFormatterSpec('125-5', '2')).toEqual(125.625);
 		});
 
 		it('returns 125.625 (with unit code 5) when parsing "125-240"', function () {
-			expect(stringToDecimalFormatter('125-240', '5')).toEqual(125.75);
+			expect(stringToDecimalFormatterSpec('125-240', '5')).toEqual(125.75);
 		});
 	});
 });
@@ -5808,6 +6019,26 @@ describe('When parsing a symbol for instrument type', function () {
 			expect(instrumentType.option_type).toEqual('call');
 		});
 	});
+
+	describe('and the symbol is _S_SP_ZCH7_ZCK7', function () {
+		var instrumentType = void 0;
+
+		beforeEach(function () {
+			instrumentType = symbolParser.parseInstrumentType('_S_SP_ZCH7_ZCK7');
+		});
+
+		it('the result should not be null', function () {
+			expect(instrumentType).not.toBe(null);
+		});
+
+		it('the "symbol" should be "_S_SP_ZCH7_ZCK7"', function () {
+			expect(instrumentType.symbol).toEqual('_S_SP_ZCH7_ZCK7');
+		});
+
+		it('the "type" should be "future_spread"', function () {
+			expect(instrumentType.type).toEqual('future_spread');
+		});
+	});
 });
 
 describe('When checking to see if a symbol is a future', function () {
@@ -5829,10 +6060,6 @@ describe('When checking to see if a symbol is a future', function () {
 
 	it('the symbol "O!H7" should return true', function () {
 		expect(symbolParser.getIsFuture('O!H7')).toEqual(true);
-	});
-
-	it('the symbol "O!H17" should return true', function () {
-		expect(symbolParser.getIsFuture('O!H17')).toEqual(true);
 	});
 
 	it('the symbol "O!H2017" should return true', function () {
@@ -5885,6 +6112,10 @@ describe('When checking to see if a symbol is a future', function () {
 
 	it('the symbol "PLATTS:AAVSV00" should return false', function () {
 		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+	});
+
+	it('the symbol "ZCPAUS.CM" should return false', function () {
+		expect(symbolParser.getIsFuture('ZCPAUS.CM')).toEqual(false);
 	});
 });
 
@@ -5953,10 +6184,6 @@ describe('When checking to see if a symbol is sector', function () {
 		expect(symbolParser.getIsSector('O!H7')).toEqual(false);
 	});
 
-	it('the symbol "O!H17" should return false', function () {
-		expect(symbolParser.getIsSector('O!H17')).toEqual(false);
-	});
-
 	it('the symbol "O!H2017" should return false', function () {
 		expect(symbolParser.getIsSector('O!H2017')).toEqual(false);
 	});
@@ -6002,11 +6229,15 @@ describe('When checking to see if a symbol is sector', function () {
 	});
 
 	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+		expect(symbolParser.getIsSector('PLATTS:AAVSV00C')).toEqual(false);
 	});
 
 	it('the symbol "PLATTS:AAVSV00" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+		expect(symbolParser.getIsSector('PLATTS:AAVSV00')).toEqual(false);
+	});
+
+	it('the symbol "ZCPAUS.CM" should return false', function () {
+		expect(symbolParser.getIsSector('ZCPAUS.CM')).toEqual(false);
 	});
 });
 
@@ -6079,11 +6310,15 @@ describe('When checking to see if a symbol is forex', function () {
 	});
 
 	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+		expect(symbolParser.getIsForex('PLATTS:AAVSV00C')).toEqual(false);
 	});
 
 	it('the symbol "PLATTS:AAVSV00" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+		expect(symbolParser.getIsForex('PLATTS:AAVSV00')).toEqual(false);
+	});
+
+	it('the symbol "ZCPAUS.CM" should return false', function () {
+		expect(symbolParser.getIsForex('ZCPAUS.CM')).toEqual(false);
 	});
 });
 
@@ -6157,11 +6392,15 @@ describe('When checking to see if a symbol is a future spread', function () {
 	});
 
 	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+		expect(symbolParser.getIsFutureSpread('PLATTS:AAVSV00C')).toEqual(false);
 	});
 
 	it('the symbol "PLATTS:AAVSV00" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+		expect(symbolParser.getIsFutureSpread('PLATTS:AAVSV00')).toEqual(false);
+	});
+
+	it('the symbol "ZCPAUS.CM" should return false', function () {
+		expect(symbolParser.getIsFutureSpread('ZCPAUS.CM')).toEqual(false);
 	});
 });
 
@@ -6235,11 +6474,97 @@ describe('When checking to see if a symbol is a future option', function () {
 	});
 
 	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00C')).toEqual(false);
+		expect(symbolParser.getIsFutureOption('PLATTS:AAVSV00C')).toEqual(false);
 	});
 
 	it('the symbol "PLATTS:AAVSV00" should return false', function () {
-		expect(symbolParser.getIsFuture('PLATTS:AAVSV00')).toEqual(false);
+		expect(symbolParser.getIsFutureOption('PLATTS:AAVSV00')).toEqual(false);
+	});
+
+	it('the symbol "ZCPAUS.CM" should return false', function () {
+		expect(symbolParser.getIsFutureOption('ZCPAUS.CM')).toEqual(false);
+	});
+});
+
+describe('When checking to see if a symbol is a cmdty index option', function () {
+	it('the symbol "ESZ6" should return false', function () {
+		expect(symbolParser.getIsCmdty('ESZ6')).toEqual(false);
+	});
+
+	it('the symbol "ESZ16" should return false', function () {
+		expect(symbolParser.getIsCmdty('ESZ16')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2016" should return false', function () {
+		expect(symbolParser.getIsCmdty('ESZ2016')).toEqual(false);
+	});
+
+	it('the symbol "ESZ016" should return false', function () {
+		expect(symbolParser.getIsCmdty('ESZ016')).toEqual(false);
+	});
+
+	it('the symbol "O!H7" should return false', function () {
+		expect(symbolParser.getIsCmdty('O!H7')).toEqual(false);
+	});
+
+	it('the symbol "O!H17" should return false', function () {
+		expect(symbolParser.getIsCmdty('O!H17')).toEqual(false);
+	});
+
+	it('the symbol "O!H2017" should return false', function () {
+		expect(symbolParser.getIsCmdty('O!H2017')).toEqual(false);
+	});
+
+	it('the symbol "IBM" should return false', function () {
+		expect(symbolParser.getIsCmdty('IBM')).toEqual(false);
+	});
+
+	it('the symbol "^EURUSD" should return false', function () {
+		expect(symbolParser.getIsCmdty('^EURUSD')).toEqual(false);
+	});
+
+	it('the symbol "-001A" should return false', function () {
+		expect(symbolParser.getIsCmdty('-001A')).toEqual(false);
+	});
+
+	it('the symbol "$DOWI" should return false', function () {
+		expect(symbolParser.getIsCmdty('$DOWI')).toEqual(false);
+	});
+
+	it('the symbol "$S1GE" should return false', function () {
+		expect(symbolParser.getIsCmdty('$S1GE')).toEqual(false);
+	});
+
+	it('the symbol "_S_SP_ZCH7_ZCK7" should return false', function () {
+		expect(symbolParser.getIsCmdty('_S_SP_ZCH7_ZCK7')).toEqual(false);
+	});
+
+	it('the symbol "ESZ2660Q" should return false', function () {
+		expect(symbolParser.getIsCmdty('ESZ2660Q')).toEqual(false);
+	});
+
+	it('the symbol "ZWH9|470C" should return false', function () {
+		expect(symbolParser.getIsCmdty('ZWH9|470C')).toEqual(false);
+	});
+
+	it('the symbol "BB1F8|12050C" should return false', function () {
+		expect(symbolParser.getIsCmdty('BB1F8|12050C')).toEqual(false);
+	});
+
+	it('the symbol "ZWK18465C" should return false', function () {
+		expect(symbolParser.getIsCmdty('ZWK18465C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00C" should return false', function () {
+		expect(symbolParser.getIsCmdty('PLATTS:AAVSV00C')).toEqual(false);
+	});
+
+	it('the symbol "PLATTS:AAVSV00" should return false', function () {
+		expect(symbolParser.getIsCmdty('PLATTS:AAVSV00')).toEqual(false);
+	});
+
+	it('the symbol "ZCPAUS.CM" should return true', function () {
+		expect(symbolParser.getIsCmdty('ZCPAUS.CM')).toEqual(true);
 	});
 });
 
@@ -6253,14 +6578,12 @@ describe('When checking to see if a symbol is a BATS listing', function () {
 	});
 });
 
-describe('When checking the display format for the symbol "HPIUSA.RP"', function () {
-	it('it should not be formatted as a percent', function () {
+describe('When checking the display format for the symbol ', function () {
+	it('The symbol "HPIUSA.RP" should not be formatted as a percent', function () {
 		expect(symbolParser.displayUsingPercent('HPIUSA.RP')).toEqual(false);
 	});
-});
 
-describe('When checking the display format for the symbol "UERMNTUS.RT"', function () {
-	it('it should be formatted as a percent', function () {
+	it('The symbol "UERMNTUS.RT" should be formatted as a percent', function () {
 		expect(symbolParser.displayUsingPercent('UERMNTUS.RT')).toEqual(true);
 	});
 });

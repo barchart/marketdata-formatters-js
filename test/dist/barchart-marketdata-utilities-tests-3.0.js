@@ -117,6 +117,10 @@ module.exports = function () {
 		},
 
 		dateToDayCode: function dateToDayCode(date) {
+			if (date === null || date === undefined) {
+				return null;
+			}
+
 			var d = date.getDate();
 
 			if (d >= 1 && d <= 9) {
@@ -129,6 +133,10 @@ module.exports = function () {
 		},
 
 		dayCodeToNumber: function dayCodeToNumber(dayCode) {
+			if (dayCode === null || dayCode === undefined) {
+				return null;
+			}
+
 			var d = parseInt(dayCode, 31);
 
 			if (d > 9) {
@@ -4143,6 +4151,14 @@ describe('When converting a date instance to a day code', function () {
 	it('"Jan 31, 2016" should translate to U', function () {
 		expect(convert.dateToDayCode(new Date(2016, 0, 31))).toEqual('U');
 	});
+
+	it('A null value should translate to a null value', function () {
+		expect(convert.dateToDayCode(null)).toEqual(null);
+	});
+
+	it('A undefined value should translate to a null value', function () {
+		expect(convert.dateToDayCode(null)).toEqual(null);
+	});
 });
 
 describe('When converting a dayCode to number', function () {
@@ -4352,6 +4368,14 @@ describe('When converting a dayCode to number', function () {
 
 	it('"u" should translate to 31', function () {
 		expect(convert.dayCodeToNumber("u")).toEqual(31);
+	});
+
+	it('A null value should translate to a null value', function () {
+		expect(convert.dayCodeToNumber(null)).toEqual(null);
+	});
+
+	it('A undefined value should translate to a null value', function () {
+		expect(convert.dayCodeToNumber(null)).toEqual(null);
 	});
 });
 

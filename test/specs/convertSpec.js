@@ -264,17 +264,17 @@ describe('When converting a date instance to a day code', () => {
 	it('"Jan 31, 2016" should translate to U', () => {
 		expect(convert.dateToDayCode(new Date(2016, 0, 31))).toEqual('U');
 	});
-});
 
-describe('When converting a dayCode to number', () => {
 	it('A null value should translate to a null value', () => {
-		expect(convert.dayCodeToNumber(null)).toEqual(null);
+		expect(convert.dateToDayCode(null)).toEqual(null);
 	});
 
 	it('A undefined value should translate to a null value', () => {
-		expect(convert.dayCodeToNumber(null)).toEqual(null);
+		expect(convert.dateToDayCode(null)).toEqual(null);
 	});
+});
 
+describe('When converting a dayCode to number', () => {
 	it('"1" should translate to 1', () => {
 		expect(convert.dayCodeToNumber("1")).toEqual(1);
 	});
@@ -481,5 +481,13 @@ describe('When converting a dayCode to number', () => {
 
 	it('"u" should translate to 31', () => {
 		expect(convert.dayCodeToNumber("u")).toEqual(31);
+	});
+
+	it('A null value should translate to a null value', () => {
+		expect(convert.dayCodeToNumber(null)).toEqual(null);
+	});
+
+	it('A undefined value should translate to a null value', () => {
+		expect(convert.dayCodeToNumber(null)).toEqual(null);
 	});
 });

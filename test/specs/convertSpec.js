@@ -490,4 +490,8 @@ describe('When converting a dayCode to number', () => {
 	it('A undefined value should translate to a null value', () => {
 		expect(convert.dayCodeToNumber(null)).toEqual(null);
 	});
+
+	it('A zero-length string should translate to a null value', () => {
+		expect(convert.dayCodeToNumber('')).toEqual(null);
+	});
 });

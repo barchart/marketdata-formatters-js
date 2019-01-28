@@ -1,6 +1,6 @@
 {
   "name": "barchart-marketdata-utilities",
-  "version": "3.0.18",
+  "version": "3.0.19",
   "homepage": "https://github.com/barchart/marketdata-utilities-js",
   "description": "Barchart Market Data Utilities for JavaScript",
   "main": "lib/index.js",

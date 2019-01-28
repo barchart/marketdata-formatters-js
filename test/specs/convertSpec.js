@@ -267,6 +267,14 @@ describe('When converting a date instance to a day code', () => {
 });
 
 describe('When converting a dayCode to number', () => {
+	it('A null value should translate to a null value', () => {
+		expect(convert.dayCodeToNumber(null)).toEqual(null);
+	});
+
+	it('A undefined value should translate to a null value', () => {
+		expect(convert.dayCodeToNumber(null)).toEqual(null);
+	});
+
 	it('"1" should translate to 1', () => {
 		expect(convert.dayCodeToNumber("1")).toEqual(1);
 	});

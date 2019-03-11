@@ -218,6 +218,14 @@ describe('When a price formatter is created', () => {
 			expect(priceFormatter.format(-123.640625, '5')).toEqual('-123-205');
 		});
 
+		it('formats 114.5156 (with unit code 6) as "114-165"', () => {
+			expect(priceFormatter.format(114.5156, '6')).toEqual('114-165');
+		});
+
+		it('formats 122.7031 (with unit code 5) as "122-225"', () => {
+			expect(priceFormatter.format(122.7031, '5')).toEqual('122-225');
+		});
+
 		it('formats 0 (with unit code 2) as "0"', function () {
 			expect(priceFormatter.format(0, '2')).toEqual('0-0');
 		});

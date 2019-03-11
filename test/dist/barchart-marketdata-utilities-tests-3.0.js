@@ -46,6 +46,13 @@ module.exports = function () {
 	'use strict';
 
 	return {
+		/**
+   * Converts a unit code into a base code.
+   *
+   * @public
+   * @param {String} baseCode
+   * @return {Number}
+   */
 		unitCodeToBaseCode: function unitCodeToBaseCode(unitCode) {
 			switch (unitCode) {
 				case '2':
@@ -81,6 +88,13 @@ module.exports = function () {
 			}
 		},
 
+		/**
+   * Converts a base code into a unit code.
+   *
+   * @public
+   * @param {Number} baseCode
+   * @return {String}
+   */
 		baseCodeToUnitCode: function baseCodeToUnitCode(baseCode) {
 			switch (baseCode) {
 				case -1:
@@ -116,6 +130,13 @@ module.exports = function () {
 			}
 		},
 
+		/**
+   * Converts a date instance to a day code.
+   *
+   * @public
+   * @param {Date} date
+   * @returns {String|null}
+   */
 		dateToDayCode: function dateToDayCode(date) {
 			if (date === null || date === undefined) {
 				return null;
@@ -132,8 +153,15 @@ module.exports = function () {
 			}
 		},
 
+		/**
+   * Converts a day code to a day number.
+   *
+   * @public
+   * @param {String} dayCode
+   * @returns {Number|null}
+   */
 		dayCodeToNumber: function dayCodeToNumber(dayCode) {
-			if (dayCode === null || dayCode === undefined) {
+			if (dayCode === null || dayCode === undefined || dayCode === '') {
 				return null;
 			}
 
@@ -834,9 +862,9 @@ module.exports = function () {
 					case '4':
 						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad((absoluteValue - Math.floor(absoluteValue)) * 32, 2), suffix].join('');
 					case '5':
-						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 64), specialFractions ? 3 : 2), suffix].join('');
+						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad(Math.round((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 64)), specialFractions ? 3 : 2), suffix].join('');
 					case '6':
-						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 128), 3), suffix].join('');
+						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad(Math.round((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 128)), 3), suffix].join('');
 					case '7':
 						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 256), 3), suffix].join('');
 					case '8':
@@ -4377,6 +4405,10 @@ describe('When converting a dayCode to number', function () {
 	it('A undefined value should translate to a null value', function () {
 		expect(convert.dayCodeToNumber(null)).toEqual(null);
 	});
+
+	it('A zero-length string should translate to a null value', function () {
+		expect(convert.dayCodeToNumber('')).toEqual(null);
+	});
 });
 
 },{"../../lib/convert":2}],18:[function(require,module,exports){
@@ -5145,6 +5177,14 @@ describe('When a price formatter is created', function () {
 
 		it('formats -123.640625 (with unit code 5) as "-123-205"', function () {
 			expect(priceFormatter.format(-123.640625, '5')).toEqual('-123-205');
+		});
+
+		it('formats 114.5156 (with unit code 6) as "114-165"', function () {
+			expect(priceFormatter.format(114.5156, '6')).toEqual('114-165');
+		});
+
+		it('formats 122.7031 (with unit code 5) as "122-225"', function () {
+			expect(priceFormatter.format(122.7031, '5')).toEqual('122-225');
 		});
 
 		it('formats 0 (with unit code 2) as "0"', function () {

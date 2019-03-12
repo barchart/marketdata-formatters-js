@@ -862,9 +862,9 @@ module.exports = function () {
 					case '4':
 						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad((absoluteValue - Math.floor(absoluteValue)) * 32, 2), suffix].join('');
 					case '5':
-						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad(Math.round((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 64)), specialFractions ? 3 : 2), suffix].join('');
+						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad(Math.floor(((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 64)).toFixed(1)), specialFractions ? 3 : 2), suffix].join('');
 					case '6':
-						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad(Math.round((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 128)), 3), suffix].join('');
+						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad(Math.floor(((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 128)).toFixed(1)), 3), suffix].join('');
 					case '7':
 						return [prefix, getWholeNumberAsString(absoluteValue), fractionSeparator, frontPad((absoluteValue - Math.floor(absoluteValue)) * (specialFractions ? 320 : 256), 3), suffix].join('');
 					case '8':
@@ -5181,6 +5181,18 @@ describe('When a price formatter is created', function () {
 
 		it('formats 114.5156 (with unit code 6) as "114-165"', function () {
 			expect(priceFormatter.format(114.5156, '6')).toEqual('114-165');
+		});
+
+		it('formats 114.7891 (with unit code 6) as "114-252"', function () {
+			expect(priceFormatter.format(114.7891, '6')).toEqual('114-252');
+		});
+
+		it('formats 114.8438 (with unit code 6) as "114-270"', function () {
+			expect(priceFormatter.format(114.8438, '6')).toEqual('114-270');
+		});
+
+		it('formats 114.75 (with unit code 6) as "114-240"', function () {
+			expect(priceFormatter.format(114.75, '6')).toEqual('114-240');
 		});
 
 		it('formats 122.7031 (with unit code 5) as "122-225"', function () {

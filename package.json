@@ -1,6 +1,6 @@
 {
   "name": "@barchart/marketdata-utilities-js",
-  "version": "3.0.22",
+  "version": "3.0.23",
   "description": "Barchart's JavaScript utilities for working with streaming market data",
   "author": {
     "name": "Eero Pikat",

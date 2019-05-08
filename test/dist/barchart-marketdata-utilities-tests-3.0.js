@@ -45,6 +45,16 @@ module.exports = function () {
 module.exports = function () {
 	'use strict';
 
+	function convertDayNumberToDayCode(d) {
+		if (d >= 1 && d <= 9) {
+			return String.fromCharCode("1".charCodeAt(0) + d - 1);
+		} else if (d == 10) {
+			return '0';
+		} else {
+			return String.fromCharCode("A".charCodeAt(0) + d - 11);
+		}
+	}
+
 	return {
 		/**
    * Converts a unit code into a base code.
@@ -142,19 +152,11 @@ module.exports = function () {
 				return null;
 			}
 
-			var d = date.getDate();
-
-			if (d >= 1 && d <= 9) {
-				return String.fromCharCode("1".charCodeAt(0) + d - 1);
-			} else if (d == 10) {
-				return '0';
-			} else {
-				return String.fromCharCode("A".charCodeAt(0) + d - 11);
-			}
+			return convertDayNumberToDayCode(date.getDate());
 		},
 
 		/**
-   * Converts a day code to a day number.
+   * Converts a day code (e.g. "A" ) to a day number (e.g. 11).
    *
    * @public
    * @param {String} dayCode
@@ -174,6 +176,21 @@ module.exports = function () {
 			}
 
 			return d;
+		},
+
+		/**
+   * Converts a day number (e.g. the 11th of the month) in o a day code (e.g. 'A').
+   *
+   * @public
+   * @param {Number=} dayNumber
+   * @returns {Number|null}
+   */
+		numberToDayCode: function numberToDayCode(dayNumber) {
+			if (dayNumber === null || dayNumber === undefined) {
+				return null;
+			}
+
+			return convertDayNumberToDayCode(dayNumber);
 		}
 	};
 }();
@@ -4408,6 +4425,140 @@ describe('When converting a dayCode to number', function () {
 
 	it('A zero-length string should translate to a null value', function () {
 		expect(convert.dayCodeToNumber('')).toEqual(null);
+	});
+});
+
+describe('When day number to a dayCode', function () {
+	it('1 should translate to "1"', function () {
+		expect(convert.numberToDayCode(1)).toEqual("1");
+	});
+
+	it('2 should translate to "2"', function () {
+		expect(convert.numberToDayCode(2)).toEqual("2");
+	});
+
+	it('3 should translate to "3"', function () {
+		expect(convert.numberToDayCode(3)).toEqual("3");
+	});
+
+	it('4 should translate to "4"', function () {
+		expect(convert.numberToDayCode(4)).toEqual("4");
+	});
+
+	it('5 should translate to "5"', function () {
+		expect(convert.numberToDayCode(5)).toEqual("5");
+	});
+
+	it('6 should translate to "6"', function () {
+		expect(convert.numberToDayCode(6)).toEqual("6");
+	});
+
+	it('7 should translate to "7"', function () {
+		expect(convert.numberToDayCode(7)).toEqual("7");
+	});
+
+	it('8 should translate to "8"', function () {
+		expect(convert.numberToDayCode(8)).toEqual("8");
+	});
+
+	it('9 should translate to "9"', function () {
+		expect(convert.numberToDayCode(9)).toEqual("9");
+	});
+
+	it('0 should translate to "0"', function () {
+		expect(convert.numberToDayCode(10)).toEqual("0");
+	});
+
+	it('11 should translate to "A"', function () {
+		expect(convert.numberToDayCode(11)).toEqual("A");
+	});
+
+	it('12 should translate to "B"', function () {
+		expect(convert.numberToDayCode(12)).toEqual("B");
+	});
+
+	it('13 should translate to "C"', function () {
+		expect(convert.numberToDayCode(13)).toEqual("C");
+	});
+
+	it('14 should translate to "D"', function () {
+		expect(convert.numberToDayCode(14)).toEqual("D");
+	});
+
+	it('15 should translate to "E"', function () {
+		expect(convert.numberToDayCode(15)).toEqual("E");
+	});
+
+	it('16 should translate to "F"', function () {
+		expect(convert.numberToDayCode(16)).toEqual("F");
+	});
+
+	it('17 should translate to "G"', function () {
+		expect(convert.numberToDayCode(17)).toEqual("G");
+	});
+
+	it('18 should translate to "H"', function () {
+		expect(convert.numberToDayCode(18)).toEqual("H");
+	});
+
+	it('19 should translate to "I"', function () {
+		expect(convert.numberToDayCode(19)).toEqual("I");
+	});
+
+	it('20 should translate to "J"', function () {
+		expect(convert.numberToDayCode(20)).toEqual("J");
+	});
+
+	it('21 should translate to "K"', function () {
+		expect(convert.numberToDayCode(21)).toEqual("K");
+	});
+
+	it('22 should translate to "L"', function () {
+		expect(convert.numberToDayCode(22)).toEqual("L");
+	});
+
+	it('23 should translate to "M"', function () {
+		expect(convert.numberToDayCode(23)).toEqual("M");
+	});
+
+	it('24 should translate to "N"', function () {
+		expect(convert.numberToDayCode(24)).toEqual("N");
+	});
+
+	it('25 should translate to "O"', function () {
+		expect(convert.numberToDayCode(25)).toEqual("O");
+	});
+
+	it('26 should translate to "P"', function () {
+		expect(convert.numberToDayCode(26)).toEqual("P");
+	});
+
+	it('27 should translate to "Q"', function () {
+		expect(convert.numberToDayCode(27)).toEqual("Q");
+	});
+
+	it('28 should translate to "R"', function () {
+		expect(convert.numberToDayCode(28)).toEqual("R");
+	});
+
+	it('29 should translate to "S"', function () {
+		expect(convert.numberToDayCode(29)).toEqual("S");
+	});
+
+	it('30 should translate to "T"', function () {
+		expect(convert.numberToDayCode(30)).toEqual("T");
+	});
+
+	it('31 should translate to "U"', function () {
+		expect(convert.numberToDayCode(31)).toEqual("U");
+	});
+
+	it('A null value should translate to a null value', function () {
+		expect(convert.numberToDayCode(null)).toEqual(null);
+	});
+
+	it('A undefined value should translate to a null value', function () {
+		expect(convert.numberToDayCode(null)).toEqual(null);
 	});
 });
 

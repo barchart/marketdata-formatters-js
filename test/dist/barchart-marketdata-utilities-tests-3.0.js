@@ -436,7 +436,7 @@ module.exports = function () {
 									// (i.e. "session" variable) -- instead of taking it from the "combined"
 									// session.
 
-									if (sessions.combined.day) message.day = sessions.combined.day;
+									if (sessions.combined.day) message.day = session.day;
 									if (premarket && typeof message.flag === 'undefined') message.flag = 'p';
 
 									var p = sessions.previous;

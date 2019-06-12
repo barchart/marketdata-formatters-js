@@ -260,4 +260,18 @@ describe('when parsing a DDF message', () => {
 			expect(x.session).toEqual('I');
 		});
 	});
+
+	describe('for test message', () => {
+		let x;
+
+		beforeEach(() => {
+			x = parseMessage('%<QUOTE symbol="ZSN9" name="Soybean" exchange="CBOT" basecode="2" pointvalue="50.0" tickincrement="2" ddfexchange="B" flag="p" lastupdate="20190611174304" bid="8562" bidsize="47" ask="8562" asksize="17" mode="I"><SESSION day="B" session="T" previous="8592" id="combined"/><SESSION day="A" session=" " timestamp="20190611164219" open="8554" high="8634" low="8502" last="8592" previous="8584" settlement="8592" tradesize="5" openinterest="307672" volume="120361" numtrades="36428" pricevolume="55293193.75" tradetime="20190611131959" ticks=".." id="previous"/><SESSION day="A" session="T" previous="8584" id="session_A_T"/><SESSION day="B" session="T" previous="8592" id="session_B_T"/></QUOTE>');
+		});
+
+		it('the "record" should be "2"', () => {
+			expect(true).toEqual(true);
+
+			console.log(x);
+		});
+	});
 });

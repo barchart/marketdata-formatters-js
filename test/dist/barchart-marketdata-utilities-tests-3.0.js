@@ -997,6 +997,7 @@ module.exports = function () {
   */
 	return function (string, unitCode) {
 		var baseCode = Converter.unitCodeToBaseCode(unitCode);
+		var is_negative = false;
 
 		// Fix for 10-Yr T-Notes
 		if (baseCode === -4 && (string.length === 7 || string.length === 6 && string.charAt(0) !== '1')) {
@@ -1007,6 +1008,11 @@ module.exports = function () {
 			var ival = string * 1;
 			return Math.round(ival * Math.pow(10, baseCode)) / Math.pow(10, baseCode);
 		} else {
+			if (string.match(/^-/)) {
+				is_negative = true;
+				string = string.slice(1);
+			}
+
 			var has_dash = string.match(/-/);
 			var divisor = Math.pow(2, Math.abs(baseCode) + 2);
 			var fracsize = String(divisor).length;
@@ -1020,7 +1026,7 @@ module.exports = function () {
 				divisor = has_dash ? 320 : 128;
 			}
 
-			return numerator + denominator / divisor;
+			return (numerator + denominator / divisor) * (is_negative ? -1 : 1);
 		}
 	};
 }();
@@ -5103,20 +5109,6 @@ describe('when parsing a DDF message', function () {
 
 		it('the "session" should be "I"', function () {
 			expect(x.session).toEqual('I');
-		});
-	});
-
-	describe('for test message', function () {
-		var x = void 0;
-
-		beforeEach(function () {
-			x = parseMessage('%<QUOTE symbol="ZSN9" name="Soybean" exchange="CBOT" basecode="2" pointvalue="50.0" tickincrement="2" ddfexchange="B" flag="p" lastupdate="20190611174304" bid="8562" bidsize="47" ask="8562" asksize="17" mode="I"><SESSION day="B" session="T" previous="8592" id="combined"/><SESSION day="A" session=" " timestamp="20190611164219" open="8554" high="8634" low="8502" last="8592" previous="8584" settlement="8592" tradesize="5" openinterest="307672" volume="120361" numtrades="36428" pricevolume="55293193.75" tradetime="20190611131959" ticks=".." id="previous"/><SESSION day="A" session="T" previous="8584" id="session_A_T"/><SESSION day="B" session="T" previous="8592" id="session_B_T"/></QUOTE>');
-		});
-
-		it('the "record" should be "2"', function () {
-			expect(true).toEqual(true);
-
-			console.log(x);
 		});
 	});
 });

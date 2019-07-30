@@ -658,6 +658,7 @@ describe('When checking to see if a symbol is forex', () => {
 	it('the symbol "$DOWI" should return false', () => {
 		expect(symbolParser.getIsForex('$DOWI')).toEqual(false);
 	});
+
 	it('the symbol "$S1GE" should return false', () => {
 		expect(symbolParser.getIsForex('$S1GE')).toEqual(false);
 	});

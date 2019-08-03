@@ -1069,6 +1069,21 @@ module.exports = function () {
 		T: 'Z'
 	};
 
+	var futuresMonthNumbers = {
+		F: 1,
+		G: 2,
+		H: 3,
+		J: 4,
+		K: 5,
+		M: 6,
+		N: 7,
+		Q: 8,
+		U: 8,
+		V: 10,
+		X: 11,
+		Z: 12
+	};
+
 	var predicates = {};
 
 	predicates.bats = /^(.*)\.BZ$/i;
@@ -1278,6 +1293,12 @@ module.exports = function () {
 		return symbol;
 	});
 
+	function getCurrentMonth() {
+		var now = new Date();
+
+		return now.getMonth() + 1;
+	}
+
 	function getCurrentYear() {
 		var now = new Date();
 
@@ -1289,6 +1310,8 @@ module.exports = function () {
 
 		return yearString.substring(yearString.length - digits, yearString.length);
 	}
+
+	function getFuturesMonthNumber(monthString) {}
 
 	function getFuturesMonth(monthString) {
 		return alternateFuturesMonths[monthString] || monthString;
@@ -1513,6 +1536,37 @@ module.exports = function () {
    */
 		getIsBats: function getIsBats(symbol) {
 			return typeof symbol === 'string' && predicates.bats.test(symbol);
+		},
+
+		/**
+   * Returns true if the symbol has an expiration and the symbol appears
+   * to be expired (e.g. a future for a past year).
+   *
+   * @public
+   * @param {String} symbol
+   * @returns {Boolean}
+   */
+		getIsExpired: function getIsExpired(symbol) {
+			var definition = symbolParser.parseInstrumentType(symbol);
+
+			var returnVal = false;
+
+			if (definition !== null && definition.year && definition.month) {
+				var currentYear = getCurrentYear();
+
+				if (definition.year < currentYear) {
+					returnVal = true;
+				} else if (definition.year === currentYear && futuresMonthNumbers.hasOwnProperty(definition.month)) {
+					var currentMonth = getCurrentMonth();
+					var futuresMonth = futuresMonthNumbers[definition.month];
+
+					if (currentMonth > futuresMonth) {
+						returnVal = true;
+					}
+				}
+			}
+
+			return returnVal;
 		},
 
 		/**
@@ -6518,6 +6572,7 @@ describe('When checking to see if a symbol is forex', function () {
 	it('the symbol "$DOWI" should return false', function () {
 		expect(symbolParser.getIsForex('$DOWI')).toEqual(false);
 	});
+
 	it('the symbol "$S1GE" should return false', function () {
 		expect(symbolParser.getIsForex('$S1GE')).toEqual(false);
 	});

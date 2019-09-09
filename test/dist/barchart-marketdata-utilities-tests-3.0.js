@@ -60,7 +60,7 @@ module.exports = function () {
    * Converts a unit code into a base code.
    *
    * @public
-   * @param {String} baseCode
+   * @param {String} unitCode
    * @return {Number}
    */
 		unitCodeToBaseCode: function unitCodeToBaseCode(unitCode) {
@@ -1083,7 +1083,7 @@ module.exports = function () {
 		M: 6,
 		N: 7,
 		Q: 8,
-		U: 8,
+		U: 9,
 		V: 10,
 		X: 11,
 		Z: 12

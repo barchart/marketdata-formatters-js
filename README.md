@@ -1,20 +1,31 @@
 # @barchart/marketdata-utilities-js
-## JavaScript library for working with Barchart's DDF messages
+## JavaScript library for parsing and interpreting Barhcart's DDF protocol
 
-This library provides common code for parsing and interpreting DDF messages (a proprietary, string-based protocol used for market data messages). The library is intended for use in client (i.e. browser) and server (i.e. Node.js) environments. However, since the source code uses ES6, some assembly may be required for browser use (e.g. polyfills, transpilation, etc).
+## Deprecation
 
-## Documentation
+This library is deprecated. It has been subsumed by (@barchart/marketdata-api-js)[https://github.com/barchart/marketdata-api-js] as of major version 4. Please upgrade as soon as possible.
 
-[JSDoc](http://usejsdoc.org/) is used to document the source code. HTML documentation can be generated (into a "docs" folder), as follows:
+### Upgrade Instructions
 
-	> gulp document
+Install the new library, as follows:
 
-## Package Managers
+```
+npm install @barchart/marketdata-api-js -S
+```
 
-	> npm install @barchart/marketdata-utilities-js -S
+All utilities (from this project) can now be found here:
 
-## Unit Testing
+@barchart/marketdata-api-js/lib/utilities
 
-Execute the [Jasmine](https://jasmine.github.io/) unit tests, as follows:
+### Upgrade Comments
 
-	> gulp test
+* Object and function names have been changed slightly; however, it shouldn't be too difficult to resolve.
+* In this library, we often exported JavaScript objects which wrapped functions. After the upgrade, we attempt to export plain functions. For example:
+  * old: module.exports = { format: function(x) { } }
+  * new: module.exports = format(x) { }
+* Factory functions to build price and date/time formatters still exist (which use closures to store defaults). See the following:
+  * /utilities/format/factories/price.js
+  * /utilities/format/factories/quote.js
+
+
+

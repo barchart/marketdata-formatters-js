@@ -1,5 +1,5 @@
 # @barchart/marketdata-utilities-js
-## JavaScript library for parsing and interpreting Barhcart's DDF protocol
+## JavaScript library for parsing and interpreting Barchart's DDF protocol
 
 ## Deprecation
 
@@ -24,8 +24,8 @@ All utilities (from this project) can now be found here:
   * old: module.exports = { format: function(x) { } }
   * new: module.exports = format(x) { }
 * Factory functions to build price and date/time formatters still exist (which use closures to store defaults). See the following:
-  * /utilities/format/factories/price.js
-  * /utilities/format/factories/quote.js
+  * /lib/utilities/format/factories/price.js
+  * /lib//utilities/format/factories/quote.js
 
 
 

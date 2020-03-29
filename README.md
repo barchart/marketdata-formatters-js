@@ -1,9 +1,10 @@
 # @barchart/marketdata-utilities-js
-## JavaScript library for parsing and interpreting Barchart's DDF protocol
+
+A JavaScript library for parsing and interpreting Barchart's DDF protocol
 
 ## Deprecation
 
-This library is deprecated. It has been subsumed by [@barchart/marketdata-api-js](https://github.com/barchart/marketdata-api-js) -- as of major version 4. Please upgrade as soon as possible.
+**This library is deprecated.** It has been subsumed by [@barchart/marketdata-api-js](https://github.com/barchart/marketdata-api-js) -- as of major version 4. Please upgrade as soon as possible.
 
 ### Upgrade Instructions
 
